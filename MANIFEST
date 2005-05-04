@@ -1,0 +1,13 @@
+Changes
+examples/ecs.log
+lib/Logfile/EPrints.pm
+lib/Logfile/Hit.pm
+lib/Logfile/Institution.pm
+lib/Logfile/Repeated.pm
+lib/Logfile/RobotsFilter.pm
+Makefile.PL
+MANIFEST
+META.yml			Module meta-data (added by MakeMaker)
+README
+t/00parse.t
+t/01institution.t
