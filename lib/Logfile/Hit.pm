@@ -98,6 +98,7 @@ Tim Brody - <tdb01r@ecs.soton.ac.uk>
 #use warnings;
 #use strict;
 use vars qw( $AUTOLOAD %INST_CACHE $UA $LINE_PARSER @FIELDS $GEO );
+use Date::Parse;
 use Text::CSV_XS;
 use Socket;
 use Geo::IP::PurePerl;
@@ -114,19 +115,18 @@ $GEO = Geo::IP::PurePerl->new(GEOIP_STANDARD);
 );
 
 sub new {
-	my $class = shift;
+	return unless $_[1];
 	my %self;
 
-	my $str = shift || return;
 	# The date is contained in square-brackets
-	if( $str =~ s/\[([^\]]+)\]\s// ) {
+	if( $_[1] =~ s/\[([^\]]+)\]\s// ) {
 		$self{date} = $1;
 	}
 	# Change apache escaping back to URI escaping
-	$str =~ s/\\x/\%/g;
+	$_[1] =~ s/\\x/\%/g;
 	
 	# Split the log file fields
-	if($LINE_PARSER->parse($str)) {
+	if($LINE_PARSER->parse($_[1])) {
 		@self{@FIELDS} = $LINE_PARSER->fields;
 	} else {
 		warn "Text::CSV_XS couldn't parse: " . $LINE_PARSER->error_input;
@@ -141,26 +141,45 @@ sub new {
 		my( $name, $aliases, $addrtype, $length, @addrs ) = gethostbyname($self{'address'});
 		$self{'address'} = inet_ntoa($addrs[0]) if defined($addrs[0]);
 	}
-	# Get the estimated country of origin by IP
-	$self{country} = $GEO->country_code_by_addr($self{'address'});
 			
-	return bless \%self, $class;
+	return bless \%self, $_[0];
 }
 
 sub AUTOLOAD {
-	my $self = shift;
 	$AUTOLOAD =~ s/.*:://;
 	return if $AUTOLOAD =~ /^[A-Z]/;
+	my $self = shift;
 	return ref($self->{$AUTOLOAD}) ?
 		&{$self->{$AUTOLOAD}}($self,@_) : 
 		$self->{$AUTOLOAD};
 }
 
+sub country {
+	my $self = shift;
+	# Get the estimated country of origin by IP
+	$self->{country} ||= $GEO->country_code_by_addr($self->address);
+}
+
 sub hostname
 {
 	my $self = shift;
-	return $self->{hostname} if $self->{hostname};
-	return $self->{hostname} = gethostbyaddr(inet_aton($self->address), AF_INET);
+	$self->{hostname} ||= gethostbyaddr(inet_aton($self->address), AF_INET);
+}
+
+sub utime
+{
+	my $self = shift;
+	$self->{'utime'} ||= Date::Parse::str2time($self->{date});
+}
+
+sub datetime
+{
+	my $self = shift;
+	$self->{datetime} ||= _time2datetime($self->utime);
+}
+
+sub _time2datetime {
+	strftime("%Y%m%d%H%M%S",localtime(shift()));
 }
 
 1;

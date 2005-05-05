@@ -6,11 +6,11 @@ use warnings;
 use Logfile::Hit;
 use Logfile::Institution;
 use Logfile::Repeated;
+use Logfile::Parser;
+use Logfile::RobotsTxtFilter;
 
-use Date::Parse;
 use URI;
 use Socket;
-use POSIX qw/strftime/;
 
 require Exporter;
 use AutoLoader qw(AUTOLOAD);
@@ -35,7 +35,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 
 # Preloaded methods go here.
 
@@ -45,39 +45,24 @@ sub new {
 	$self;
 }
 
-sub handler { shift->{handler} }
-
-sub parse_file {
-	my ($self,$fh) = @_;
-	return unless my $handler = $self->handler;
-	
-	while(<$fh>) {
-		my $hit;
-		unless( $hit = Logfile::Hit::Combined->new($_) ) {
-			warn "Couldn't parse: $_";
-			next;
-		}
-		if( 'GET' eq $hit->method && $hit->code == 200 ) {
-			my ($utime,$addr) = (str2time($hit->date), $hit->address);
-			$hit->{'utime'} = $utime;
-			$hit->{datetime} = time2datetime($utime) or die $!;
-			my $uri = URI->new($hit->page,'http');
-			my $path = $uri->path;
-			# Full text
-			if( $path =~ /^\/(\d+)\/\d/ ) {
-				$hit->{identifier} = $self->_identifier($1);
-				$handler->fulltext($hit);
-			} elsif( $path =~ /^\/(\d+)\/?$/ ) {
-				$hit->{identifier} = $self->_identifier($1);
-				$handler->abstract($hit);
-			} elsif( $path =~ /^\/view\/(\w+)\// ) {
-				$hit->{section} = $1;
-				$handler->browse($hit);
-			} elsif( $path =~ /^\/perl\/search/ ) {
-				$handler->search($hit);
-			} else {
-				#warn "Unknown path = ", $uri->path, "\n";
-			}
+sub hit {
+	my ($self,$hit) = @_;
+	if( 'GET' eq $hit->method && 200 == $hit->code ) {
+		my $path = URI->new($hit->page,'http')->path;
+		# Full text
+		if( $path =~ /^\/(\d+)\/\d/ ) {
+			$hit->{identifier} = $self->_identifier($1);
+			$self->{handler}->fulltext($hit);
+		} elsif( $path =~ /^\/(\d+)\/?$/ ) {
+			$hit->{identifier} = $self->_identifier($1);
+			$self->{handler}->abstract($hit);
+		} elsif( $path =~ /^\/view\/(\w+)\// ) {
+			$hit->{section} = $1;
+			$self->{handler}->browse($hit);
+		} elsif( $path =~ /^\/perl\/search/ ) {
+			$self->{handler}->search($hit);
+		} else {
+			#warn "Unknown path = ", $uri->path, "\n";
 		}
 	}
 }
@@ -85,10 +70,6 @@ sub parse_file {
 sub _identifier {
 	my ($self,$no) = @_;
 	return ($self->{'identifier'}||'oai:GenericEprints:').$no;
-}
-
-sub time2datetime {
-	strftime("%Y%m%d%H%M%S",localtime(shift()));
 }
 
 # Autoload methods go after =cut, and are processed by the autosplit program.
@@ -104,12 +85,14 @@ Logfile::EPrints - Parse Apache logs from GNU EPrints
 
   use Logfile::EPrints;
 
-  my $parser = Logfile::EPrints->new(
-  	handler=>Logfile::Repeated->new(
-	  handler=>Logfile::Institution->new(
-	  	handler=>$MyHandler,
-	)),
-	identifier=>'oai:myir:', # Prepended to the eprint id
+  my $parser = Logfile::Parser->new(
+	handler=>Logfile::EPrints->new(
+	  identifier=>'oai:myir:', # Prepended to the eprint id
+  	  handler=>Logfile::Repeated->new(
+	    handler=>Logfile::Institution->new(
+	  	  handler=>$MyHandler,
+	  )),
+	),
   );
   open my $fh, "<access_log" or die $!;
   $parser->parse_file($fh);

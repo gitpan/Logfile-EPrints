@@ -3,11 +3,14 @@ examples/ecs.log
 lib/Logfile/EPrints.pm
 lib/Logfile/Hit.pm
 lib/Logfile/Institution.pm
+lib/Logfile/Parser.pm
 lib/Logfile/Repeated.pm
 lib/Logfile/RobotsFilter.pm
+lib/Logfile/RobotsTxtFilter.pm
 Makefile.PL
 MANIFEST
 META.yml			Module meta-data (added by MakeMaker)
 README
 t/00parse.t
 t/01institution.t
+t/02robots.t

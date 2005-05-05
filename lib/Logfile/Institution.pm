@@ -17,7 +17,6 @@ sub AUTOLOAD
 	$AUTOLOAD =~ s/.*:://;
 	return if $AUTOLOAD =~ /^[A-Z]/;
 	my ($self,$hit) = @_;
-#	@{$hit->{qw(institution homepage)}} = addr2institution($hit->hostname);
 	@$hit{qw(institution homepage)} = (\&institution,\&homepage);
 	$self->{handler}->$AUTOLOAD($hit);
 }

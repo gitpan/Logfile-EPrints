@@ -15,14 +15,16 @@ ok(1);
 
 open my $fh, 'examples/ecs.log' or die $!;
 
-my $parser = Logfile::EPrints->new(
-	identifier=>'oai:eprints.ecs.soton.ac.uk:',
-	handler=>Logfile::Institution->new(
-		handler=>Logfile::Repeated->new(
-			handler=>Handler->new(),
-	)),
+my $parser = Logfile::Parser->new(
+	handler=>Logfile::EPrints->new(
+		identifier=>'oai:eprints.ecs.soton.ac.uk:',
+		handler=>Logfile::Institution->new(
+			handler=>Logfile::Repeated->new(
+				handler=>Handler->new(),
+		)),
+	),
 );
-$parser->parse_file($fh);
+$parser->parse_fh($fh);
 ok(1);
 
 package Handler;
