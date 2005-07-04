@@ -99,9 +99,11 @@ Tim Brody - <tdb01r@ecs.soton.ac.uk>
 #use strict;
 use vars qw( $AUTOLOAD %INST_CACHE $UA $LINE_PARSER @FIELDS $GEO );
 use Date::Parse;
+use POSIX qw/ strftime /;
 use Text::CSV_XS;
 use Socket;
 use Geo::IP::PurePerl;
+use overload '""' => \&toString;
 $LINE_PARSER = Text::CSV_XS->new({
 	escape_char => '\\',
 	sep_char => ' ',
@@ -116,7 +118,7 @@ $GEO = Geo::IP::PurePerl->new(GEOIP_STANDARD);
 
 sub new {
 	return unless $_[1];
-	my %self;
+	my %self = ('raw'=>$_[1]);
 
 	# The date is contained in square-brackets
 	if( $_[1] =~ s/\[([^\]]+)\]\s// ) {
@@ -154,6 +156,15 @@ sub AUTOLOAD {
 		$self->{$AUTOLOAD};
 }
 
+sub toString {
+	my $self = shift;
+	my $str = "===Parsed Reference===\n";
+	while(my ($k,$v) = each %$self) {
+		$str .= "$k=".($v||'n/a')."\n";
+	}
+	$str;
+}
+
 sub country {
 	my $self = shift;
 	# Get the estimated country of origin by IP
@@ -179,7 +190,45 @@ sub datetime
 }
 
 sub _time2datetime {
-	strftime("%Y%m%d%H%M%S",localtime(shift()));
+	strftime("%Y%m%d%H%M%S",localtime($_[0]));
+}
+
+package Logfile::Hit::arXiv;
+
+# Log file format is:
+# ADDRESS IDENTD_USERID USER_ID [DATE TIMEZONE] "request" HTTP_CODE RESPONSE_SIZE "referrer" "agent"
+# But can have unescaped quotes in the request or agent field (might be just uk mirror oddity)
+
+use Socket;
+use base Logfile::Hit::Combined;
+
+sub new {
+	my ($class,$hit) = @_;
+	my (%self, $rest);
+	$self{raw} = $hit;
+	(@self{qw(address userid_identd userid)},$rest) = split / /, $hit, 4;
+	$rest =~ s/^\[([^\]]+)\] //;
+	$self{date} = $1;
+	$rest =~ s/ (\d+) (\d+|-)(?= )//; # Chop code & size out of the middle
+	@self{qw(code size)} = ($1,$2);
+	$rest =~ s/^\"([A-Z]+) ([^ ]+) (HTTP\/1\.[01])\" //;
+	@self{qw(method page version)} = ($1,$2,$3);
+	
+	# Apache replaces the % in URIs with \x
+	$self{page} =~ s/\\x/\%/g;
+	chop($self{page}) if substr($self{page},-1) eq '"';
+	
+	$rest =~ s/^\"([^\"]+)\" \"(.+)\"$//;
+	@self{qw(referrer agent)} = ($1,$2);
+	
+	# Look up the IP if the log file contains hostnames
+	if( $self{'address'} !~ /\d$/ ) {
+		$self{'hostname'} = $self{'address'};
+		my( $name, $aliases, $addrtype, $length, @addrs ) = gethostbyname($self{'address'});
+		$self{'address'} = inet_ntoa($addrs[0]) if defined($addrs[0]);
+	}
+
+	bless \%self, $class;
 }
 
 1;

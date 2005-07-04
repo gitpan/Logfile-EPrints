@@ -6,6 +6,7 @@ ok(1);
 open my $fh, "<examples/ecs.log" or die $!;
 my $p = Logfile::Parser->new(
 	handler=>Logfile::RobotsTxtFilter->new(
+		file=>'examples/robots.db',
 		handler=>Handler->new()
 	)
 );

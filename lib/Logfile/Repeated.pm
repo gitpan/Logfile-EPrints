@@ -20,8 +20,9 @@ sub AUTOLOAD
 sub fulltext
 {
 	my ($self,$hit) = @_;
+	$hit->utime; # Calculate the utime
 	if( defined($SEEN{$hit->identifier}->{$hit->address}) &&
-		($hit->utime - $SEEN{$hit->identifier}->{$hit->address}) <= $SESSION_LEN
+		($hit->{utime} - $SEEN{$hit->identifier}->{$hit->address}) <= $SESSION_LEN
 	) {
 		$self->{handler}->repeated($hit);
 	} else {
@@ -45,5 +46,13 @@ This filter catches fulltext events and either forwards the fulltext event or, i
 =head1 TODO
 
 Release memory by removing requests older than 24 hours.
+
+=head1 HANDLER CALLBACKS
+
+=over 4
+
+=item repeated()
+
+=back
 
 =cut

@@ -401,7 +401,7 @@
 192.186.248.99 - - [06/Mar/2005:00:53:24 +0000] "GET /robots.txt HTTP/1.0" 404 5147 "-" "Gigabot/2.0"
 200.234.204.224 - - [06/Mar/2005:00:53:26 +0000] "GET /perl/latest_tool?mode=thesis&mainonly=yes&n=1 HTTP/1.0" 200 379 "-" "-"
 200.234.204.224 - - [06/Mar/2005:00:53:26 +0000] "GET /perl/latest_tool?mode=noimg&mainonly=yes&n=5 HTTP/1.0" 200 1536 "-" "-"
-192.186.248.198 - - [06/Mar/2005:00:53:28 +0000] "GET /399/ HTTP/1.0" 200 8558 "-" "Gigabot/2.0"
+192.186.248.99 - - [06/Mar/2005:00:53:28 +0000] "GET /399/ HTTP/1.0" 200 8558 "-" "Gigabot/2.0"
 200.234.204.224 - - [06/Mar/2005:00:53:29 +0000] "GET /view/person/472.include HTTP/1.0" 200 495 "-" "-"
 198.197.31.30 - - [06/Mar/2005:00:53:44 +0000] "GET /paam96.htm HTTP/1.0" 404 5147 "-" "FAST-WebCrawler/3.8/Scirus (scirus-crawler@fast.no; http://www.scirus.com/srsapp/contactus/)"
 200.234.204.224 - - [06/Mar/2005:00:53:53 +0000] "GET /view/person/5991.include HTTP/1.0" 404 4890 "-" "-"

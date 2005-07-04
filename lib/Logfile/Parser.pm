@@ -6,6 +6,8 @@ use POSIX qw/strftime/;
 sub new
 {
 	my ($class,%args) = @_;
+	$args{type} ||= $args{parser};
+	$args{type} ||= 'Logfile::Hit::Combined';
 	bless \%args, $class;
 }
 
@@ -17,7 +19,7 @@ sub parse_fh
 	while(<$fh>)
 	{
 		my $hit;
-		unless( $hit = Logfile::Hit::Combined->new($_) ) {
+		unless( $hit = $self->{type}->new($_) ) {
 			warn "Couldn't parse: $_";
 			next;
 		}
@@ -37,10 +39,34 @@ Logfile::Parser - Parse Web server logs that are formatted as one hit per line (
 
 	use Logfile::Parser;
 
-	$p = Logfile::Parser->new(handler=>$Handler);
+	$p = Logfile::Parser->new(
+	  type=>'Logfile::Hit::Combined',
+	  handler=>$Handler
+	);
 
 	open my $fh, "<access_log" or die $!;
 	$p->parse_fh($fh);
 	close($fh);
+
+=head1 METHODS
+
+=over 4
+
+=item new()
+
+Create a new Logfile::Parser object with the following options:
+
+	type - Optionally specify a class to parse log file lines with (defaults to ::CombinedLog)
+	handler - Handler to call (see HANDLER CALLBACKS)
+
+=back
+	
+=head1 HANDLER CALLBACKS
+
+=over 4
+
+=item hit()
+
+=back
 
 =cut

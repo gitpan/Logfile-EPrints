@@ -1,4 +1,4 @@
-package Logfile::EPrints;
+package Logfile::arXiv;
 
 use strict;
 use warnings;
@@ -13,7 +13,6 @@ use URI;
 use Socket;
 
 require Exporter;
-use AutoLoader qw(AUTOLOAD);
 use vars qw( %UID %ROBOTS );
 
 our @ISA = qw(Exporter);
@@ -35,8 +34,6 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '1.02';
-
 # Preloaded methods go here.
 
 sub new {
@@ -46,29 +43,47 @@ sub new {
 
 sub hit {
 	my ($self,$hit) = @_;
+warn "Error parsing: $hit" if( $hit->code =~ /\D/ );
 	if( 'GET' eq $hit->method && 200 == $hit->code ) {
 		my $path = URI->new($hit->page,'http')->path;
-		# Full text
-		if( $path =~ /^\/(\d+)\/\d/ ) {
-			$hit->{identifier} = $self->_identifier($1);
-			$self->{handler}->fulltext($hit);
-		} elsif( $path =~ /^\/(\d+)\/?$/ ) {
-			$hit->{identifier} = $self->_identifier($1);
-			$self->{handler}->abstract($hit);
-		} elsif( $path =~ /^\/view\/(\w+)\// ) {
-			$hit->{section} = $1;
+		$path =~ s/\/other//;
+		if( $path =~ /^\/((PS_cache)|(ftp))/ ) {
+			$path =~ s/\/\w+\/\d{4}\//\//;
+		}
+		if( $path =~ /^\/(abs|pdf|ps|PS_cache|dvi|ftp)\/([A-Za-z\-\.]+)\/?(\d{7})/ ) {
+			my ($t,$i,$n) = ($1,$2,$3);
+			$i=~ s/(?<=\w)\.\w+$//;
+			$hit->{identifier} = 'oai:arXiv.org:'.$i.'/'.$n;
+			if( $t eq 'abs' ) {
+				$self->{handler}->abstract($hit);
+			} else {
+				$self->{handler}->fulltext($hit);
+			}
+		} elsif( $path =~ /^\/list/ ) {
 			$self->{handler}->browse($hit);
-		} elsif( $path =~ /^\/perl\/search/ ) {
+		} elsif( $path =~ /^\/find/ ) {
 			$self->{handler}->search($hit);
+		# Index / Image requests / help
+		# Other requests:
+		# \/ = index
+		# ^\/icon|uk\.gif = images
+		# ^\/help = help pages
+		# ^\/form = browsing form
+		#} elsif( $path eq '/' || $path =~ /^\/(icon|help|form)|uk\.gif|robots.txt/) {
 		} else {
-			#warn "Unknown path = ", $uri->path, "\n";
+			#warn "Unhandled request type: $path";
 		}
 	}
 }
 
-sub _identifier {
-	my ($self,$no) = @_;
-	return ($self->{'identifier'}||'oai:GenericEprints:').$no;
+sub page2oai {
+	my $page = shift;
+	if( $page =~ /([A-Za-z\-\.]+\/\d{7})/ ) {
+		my $identifier = $1;
+		$identifier =~ s/(\w+)\.\w+/$1/;
+		return 'oai:arXiv.org:'.$identifier;
+	}
+	return undef;
 }
 
 # Autoload methods go after =cut, and are processed by the autosplit program.
@@ -78,15 +93,14 @@ __END__
 
 =head1 NAME
 
-Logfile::EPrints - Parse Apache logs from GNU EPrints
+Logfile::arXiv - Parse Apache logs from an arXiv mirror
 
 =head1 SYNOPSIS
 
-  use Logfile::EPrints;
+  use Logfile::arXiv;
 
   my $parser = Logfile::Parser->new(
-	handler=>Logfile::EPrints->new(
-	  identifier=>'oai:myir:', # Prepended to the eprint id
+	handler=>Logfile::arXiv->new(
   	  handler=>Logfile::Repeated->new(
 	    handler=>Logfile::Institution->new(
 	  	  handler=>$MyHandler,
@@ -95,6 +109,7 @@ Logfile::EPrints - Parse Apache logs from GNU EPrints
   );
   open my $fh, "<access_log" or die $!;
   $parser->parse_fh($fh);
+  close($fh);
 
   package MyHandler;
 
@@ -112,9 +127,7 @@ Logfile::EPrints - Parse Apache logs from GNU EPrints
 
 =head1 DESCRIPTION
 
-The Logfile::* modules provide a means to analyze log files from Web servers (typically Institutional Repositories) by translating HTTP requests into more informative data, e.g. a full-text download by a user at Caltech.
-
-The architectural design consists of a series of pluggable filters that read from a log file or stream into Perl objects/callbacks. The first filter in the stream needs to convert from the log file format into a Perl object representing a single "hit". Subsequent filters can then ignore hits (e.g. from robots) and/or augment them with additional data (e.g. country of origin by GeoIP).
+See Logfile::EPrints.
 
 =head1 HANDLER CALLBACKS
 

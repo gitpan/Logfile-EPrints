@@ -35,8 +35,8 @@ sub AUTOLOAD
 	if( $hit->page =~ /robots\.txt$/ ) {
 		return $self->robotstxt($hit);
 	}
-	if( !defined(my $agent = $self->{cache}->{$hit->address}) ) {
-		#warn "Ignoring hit from " . $hit->hostname . " (" . $agent . ")";
+	if( defined($self->{cache}->{$hit->address}) ) {
+		#warn "Ignoring hit from " . $hit->address . " (" . $self->{cache}->{$hit->address} . ")";
 	} else {
 		return $self->{handler}->$AUTOLOAD($hit);
 	}

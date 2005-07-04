@@ -3,30 +3,13 @@ use Test::More tests => 7;
 use Logfile::EPrints;
 ok(1);
 
-my $logline = '68.239.101.251 - - [06/Mar/2005:04:29:35 +0000] "GET /9271/01/Microsoft_Word_-_RemiseSenApp031_-_Sensors_and_their_applications_2003_Lime\\xe2\\x80\\xa6.pdf HTTP/1.1" 200 38896 "-" "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; .NET CLR 1.0.3705)"';
-my $hit = Logfile::Hit::Combined->new($logline);
+my $logline = 'hal9032.cs.uiuc.edu - - [03/Jul/2005:07:10:09 +0100] "GET /robots.txt" HTTP/1.0" 200 889 "-" ""Mozilla/5.0 (X11; U; Linux i686;en-US; rv:1.2.1) Gecko/20030225""';
+my $hit = Logfile::Hit::arXiv->new($logline);
 ok($hit);
-ok($hit->address eq '68.239.101.251');
+ok($hit->hostname eq 'hal9032.cs.uiuc.edu');
 ok($hit->code eq '200');
-ok($hit->datetime eq '20050306042935');
-
-use Logfile::Institution;
-use Logfile::Repeated;
-ok(1);
-
-open my $fh, 'examples/ecs.log' or die $!;
-
-my $parser = Logfile::Parser->new(
-	handler=>Logfile::EPrints->new(
-		identifier=>'oai:eprints.ecs.soton.ac.uk:',
-		handler=>Logfile::Institution->new(
-			handler=>Logfile::Repeated->new(
-				handler=>Handler->new(),
-		)),
-	),
-);
-$parser->parse_fh($fh);
-close($fh);
+ok($hit->datetime eq '20050703071009');
+ok($hit->page eq '/robots.txt');
 
 ok(1);
 
