@@ -1,16 +1,16 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Logfile-EPrints
-version:      1.02
+version:      1.03
 version_from: lib/Logfile/EPrints.pm
 installdirs:  site
 requires:
-    Date::Parse:                   0
-    Geo::IP::PurePerl:             0
-    LWP::UserAgent:                0
-    Socket:                        0
-    Text::CSV_XS:                  0
-    URI:                           0
+    Date::Parse:                   0.1
+    Geo::IP::PurePerl:             0.1
+    LWP::UserAgent:                0.1
+    Socket:                        0.1
+    Text::CSV_XS:                  0.1
+    URI:                           0.1
 
 distribution_type: module
 generated_by: ExtUtils::MakeMaker version 6.17
