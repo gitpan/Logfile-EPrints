@@ -231,4 +231,37 @@ sub new {
 	bless \%self, $class;
 }
 
+package Logfile::Hit::Bracket;
+
+# Logfile format is:
+#
+# host ident user_id [dd/mmm/yyyy:hh:mm:ss +zone] [User Agent|email?|?|referrer] "page" code size
+
+use Socket;
+use base Logfile::Hit::Combined;
+
+sub new {
+	my $class = shift;
+	my $hit = shift;
+	my %self = (raw => $hit);
+	my $rest;
+
+	(@self{qw(address userid_identd userid)},$rest) = split / /, $hit, 4;
+	$self{date} = substr($rest,1,26);
+	$rest = substr($rest,30);
+	$rest =~ s/ "([A-Z]+) ([^ ]+) (HTTP\/1\.[01])" (\d+) (\d+|-)$//;
+	@self{qw(method page version code size)} = ($1,$2,$3,$4,$5);
+	chop($rest);
+	@self{qw(agent from process_time referrer)} = split /\|/, $rest;
+	
+	# Look up the IP if the log file contains hostnames
+	if( $self{'address'} !~ /\d$/ ) {
+		$self{'hostname'} = $self{'address'};
+		my( $name, $aliases, $addrtype, $length, @addrs ) = gethostbyname($self{'address'});
+		$self{'address'} = inet_ntoa($addrs[0]) if defined($addrs[0]);
+	}
+
+	bless \%self, $class;
+}
+
 1;
