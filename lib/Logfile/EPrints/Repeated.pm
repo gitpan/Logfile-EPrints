@@ -1,4 +1,4 @@
-package Logfile::Repeated;
+package Logfile::EPrints::Repeated;
 
 use vars qw( %SEEN $SESSION_LEN $AUTOLOAD );
 
@@ -37,7 +37,7 @@ sub fulltext
 
 =head1 NAME
 
-Logfile::Repeated - Catch fulltext events and check for repeated requests
+Logfile::EPrints::Repeated - Catch fulltext events and check for repeated requests
 
 =head1 DESCRIPTION
 
@@ -45,7 +45,7 @@ This filter catches fulltext events and either forwards the fulltext event or, i
 
 =head1 TODO
 
-Release memory by removing requests older than 24 hours.
+Free memory by removing requests older than 24 hours.
 
 =head1 HANDLER CALLBACKS
 

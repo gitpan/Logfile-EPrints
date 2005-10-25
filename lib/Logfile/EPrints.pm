@@ -3,11 +3,12 @@ package Logfile::EPrints;
 use strict;
 use warnings;
 
-use Logfile::Hit;
-use Logfile::Institution;
-use Logfile::Repeated;
-use Logfile::Parser;
-use Logfile::RobotsTxtFilter;
+use Logfile::EPrints::Hit;
+use Logfile::EPrints::Institution;
+use Logfile::EPrints::Repeated;
+use Logfile::EPrints::Parser;
+use Logfile::EPrints::RobotsTxtFilter;
+use Logfile::EPrints::Period;
 
 use URI;
 use Socket;
@@ -35,7 +36,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '1.04';
+our $VERSION = '1.06';
 
 # Preloaded methods go here.
 
@@ -84,11 +85,11 @@ Logfile::EPrints - Parse Apache logs from GNU EPrints
 
   use Logfile::EPrints;
 
-  my $parser = Logfile::Parser->new(
+  my $parser = Logfile::EPrints::Parser->new(
 	handler=>Logfile::EPrints->new(
 	  identifier=>'oai:myir:', # Prepended to the eprint id
-  	  handler=>Logfile::Repeated->new(
-	    handler=>Logfile::Institution->new(
+  	  handler=>Logfile::EPrints::Repeated->new(
+	    handler=>Logfile::EPrints::Institution->new(
 	  	  handler=>$MyHandler,
 	  )),
 	),
@@ -118,6 +119,8 @@ The architectural design consists of a series of pluggable filters that read fro
 
 =head1 HANDLER CALLBACKS
 
+Other Logfile::EPrints modules may supply additional callbacks.
+
 =over 4
 
 =item abstract()
@@ -131,6 +134,8 @@ The architectural design consists of a series of pluggable filters that read fro
 =back
 
 =head1 SEE ALSO
+
+L<Logfile::EPrints::Hit>
 
 =head1 AUTHOR
 

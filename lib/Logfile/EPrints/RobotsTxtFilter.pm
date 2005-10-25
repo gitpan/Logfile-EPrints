@@ -1,4 +1,4 @@
-package Logfile::RobotsTxtFilter;
+package Logfile::EPrints::RobotsTxtFilter;
 
 use DB_File;
 
@@ -30,7 +30,7 @@ sub DESTROY
 sub AUTOLOAD
 {
 	$AUTOLOAD =~ s/^.*:://;
-	return if $AUTOLOAD =~ /^[A-Z]/;
+	return if $AUTOLOAD =~ /[A-Z]$/;
 	my ($self,$hit) = @_;
 	if( $hit->page =~ /robots\.txt$/ ) {
 		return $self->robotstxt($hit);

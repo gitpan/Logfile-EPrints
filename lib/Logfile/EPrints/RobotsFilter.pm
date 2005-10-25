@@ -1,6 +1,8 @@
-package Logfile::RobotsFilter;
+package Logfile::EPrints::RobotsFilter;
 
-warn "Logfile::RobotsFilter doesn't do anything\n";
+use Carp;
+
+carp "Logfile::EPrints::RobotsFilter doesn't do anything, this is just a placeholder\n";
 
 use vars qw( $AUTOLOAD );
 

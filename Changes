@@ -1,4 +1,10 @@
-Revision history for Perl extension EPrints::ParseLog.
+Revision history for Perl extension Logfile::EPrints.
+
+1.06
+	- Shifted all modules into the Logfile::EPrints
+	  namespace
+	- Added 'Period' filter module, to skip over leading
+	  records
 
 1.00  Thu Mar 10 14:34:24 2005
 	- original version; created by h2xs 1.23 with options

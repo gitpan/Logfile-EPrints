@@ -1,4 +1,4 @@
-package Logfile::arXiv;
+package Logfile::EPrints::arXiv;
 
 use strict;
 use warnings;
@@ -93,16 +93,16 @@ __END__
 
 =head1 NAME
 
-Logfile::arXiv - Parse Apache logs from an arXiv mirror
+Logfile::EPrints::arXiv - Parse Apache logs from an arXiv mirror
 
 =head1 SYNOPSIS
 
-  use Logfile::arXiv;
+  use Logfile::EPrints::arXiv;
 
-  my $parser = Logfile::Parser->new(
-	handler=>Logfile::arXiv->new(
-  	  handler=>Logfile::Repeated->new(
-	    handler=>Logfile::Institution->new(
+  my $parser = Logfile::EPrints::Parser->new(
+	handler=>Logfile::EPrints::arXiv->new(
+  	  handler=>Logfile::EPrints::Repeated->new(
+	    handler=>Logfile::EPrints::Institution->new(
 	  	  handler=>$MyHandler,
 	  )),
 	),

@@ -4,7 +4,7 @@ use Logfile::EPrints;
 ok(1);
 
 my $logline = '68.239.101.251 - - [06/Mar/2005:04:29:35 +0000] "GET /9271/01/Microsoft_Word_-_RemiseSenApp031_-_Sensors_and_their_applications_2003_Lime\\xe2\\x80\\xa6.pdf HTTP/1.1" 200 38896 "-" "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; .NET CLR 1.0.3705)"';
-my $hit = Logfile::Hit::Combined->new($logline);
+my $hit = Logfile::EPrints::Hit::Combined->new($logline);
 ok($hit);
 ok($hit->address eq '68.239.101.251');
 ok($hit->code eq '200');
@@ -16,11 +16,11 @@ ok(1);
 
 open my $fh, 'examples/ecs.log' or die $!;
 
-my $parser = Logfile::Parser->new(
+my $parser = Logfile::EPrints::Parser->new(
 	handler=>Logfile::EPrints->new(
 		identifier=>'oai:eprints.ecs.soton.ac.uk:',
-		handler=>Logfile::Institution->new(
-			handler=>Logfile::Repeated->new(
+		handler=>Logfile::EPrints::Institution->new(
+			handler=>Logfile::EPrints::Repeated->new(
 				handler=>Handler->new(),
 		)),
 	),

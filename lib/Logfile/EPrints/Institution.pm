@@ -1,10 +1,22 @@
-package Logfile::Institution;
+package Logfile::EPrints::Institution;
 
 use vars qw( $AUTOLOAD %INST_CACHE $UA );
 
 use LWP::UserAgent;
 $UA = LWP::UserAgent->new();
 $UA->timeout(5);
+
+=pod
+
+=head1 NAME
+
+Logfile::EPrints::Institution - Discover the 'institution' that a user comes from
+
+=head1 METHODS
+
+=over 5
+
+=cut
 
 sub new
 {
@@ -21,6 +33,14 @@ sub AUTOLOAD
 	$self->{handler}->$AUTOLOAD($hit);
 }
 
+=pod
+
+=item $hit->institution()
+
+Returns the title from the homepage()
+
+=cut
+
 sub institution
 {
 	my $self = shift;
@@ -28,6 +48,14 @@ sub institution
 	@$self{qw(_institution _homepage)} = addr2institution($self->hostname);
 	$self->{_institution};
 }
+
+=pod
+
+=item $hit->homepage()
+
+Returns the homepage for the user's network.
+
+=cut
 
 sub homepage
 {
@@ -66,3 +94,9 @@ sub addr2institution {
 }
 
 1;
+
+=pod
+
+=back
+
+=cut

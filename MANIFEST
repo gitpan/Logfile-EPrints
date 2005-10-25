@@ -2,14 +2,15 @@ bin/robotstxt.pl
 Changes
 examples/arxiv.pl
 examples/ecs.log
-lib/Logfile/arXiv.pm
 lib/Logfile/EPrints.pm
-lib/Logfile/Hit.pm
-lib/Logfile/Institution.pm
-lib/Logfile/Parser.pm
-lib/Logfile/Repeated.pm
-lib/Logfile/RobotsFilter.pm
-lib/Logfile/RobotsTxtFilter.pm
+lib/Logfile/EPrints/arXiv.pm
+lib/Logfile/EPrints/Hit.pm
+lib/Logfile/EPrints/Institution.pm
+lib/Logfile/EPrints/Parser.pm
+lib/Logfile/EPrints/Period.pm
+lib/Logfile/EPrints/Repeated.pm
+lib/Logfile/EPrints/RobotsFilter.pm
+lib/Logfile/EPrints/RobotsTxtFilter.pm
 MANIFEST
 MANIFEST.SKIP
 META.yml			Module meta-data (added by MakeMaker)

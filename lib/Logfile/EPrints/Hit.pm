@@ -1,4 +1,4 @@
-package Logfile::Hit::Combined;
+package Logfile::EPrints::Hit::Combined;
 
 # Log file format is:
 # ADDRESS IDENTD_USERID USER_ID [DATE TIMEZONE] "request" HTTP_CODE RESPONSE_SIZE "referrer" "agent"
@@ -7,13 +7,13 @@ package Logfile::Hit::Combined;
 
 =head1 NAME
 
-Logfile::Hit::Combined - Parse combined logs like those generated from Apache
+Logfile::EPrints::Hit::Combined - Parse combined logs like those generated from Apache
 
 =head1 SYNOPSIS
 
-	use Logfile::Hit;
+	use Logfile::EPrints::Hit;
 
-	my $hit = Logfile::Hit::Combined->new($line);
+	my $hit = Logfile::EPrints::Hit::Combined->new($line);
 
 	printf("%s requested %s\n",
 		$hit->hostname,
@@ -193,14 +193,14 @@ sub _time2datetime {
 	strftime("%Y%m%d%H%M%S",localtime($_[0]));
 }
 
-package Logfile::Hit::arXiv;
+package Logfile::EPrints::Hit::arXiv;
 
 # Log file format is:
 # ADDRESS IDENTD_USERID USER_ID [DATE TIMEZONE] "request" HTTP_CODE RESPONSE_SIZE "referrer" "agent"
 # But can have unescaped quotes in the request or agent field (might be just uk mirror oddity)
 
 use Socket;
-use base Logfile::Hit::Combined;
+use base Logfile::EPrints::Hit::Combined;
 
 sub new {
 	my ($class,$hit) = @_;
@@ -231,14 +231,14 @@ sub new {
 	bless \%self, $class;
 }
 
-package Logfile::Hit::Bracket;
+package Logfile::EPrints::Hit::Bracket;
 
 # Logfile format is:
 #
 # host ident user_id [dd/mmm/yyyy:hh:mm:ss +zone] [User Agent|email?|?|referrer] "page" code size
 
 use Socket;
-use base Logfile::Hit::Combined;
+use base Logfile::EPrints::Hit::Combined;
 
 sub new {
 	my $class = shift;

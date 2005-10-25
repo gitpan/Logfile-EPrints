@@ -4,8 +4,8 @@ use Logfile::EPrints;
 ok(1);
 
 open my $fh, "<examples/ecs.log" or die $!;
-my $p = Logfile::Parser->new(
-	handler=>Logfile::RobotsTxtFilter->new(
+my $p = Logfile::EPrints::Parser->new(
+	handler=>Logfile::EPrints::RobotsTxtFilter->new(
 		file=>'examples/robots.db',
 		handler=>Handler->new()
 	)

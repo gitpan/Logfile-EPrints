@@ -1,4 +1,4 @@
-package Logfile::Parser;
+package Logfile::EPrints::Parser;
 
 use Logfile::Hit;
 use POSIX qw/strftime/;
@@ -7,7 +7,7 @@ sub new
 {
 	my ($class,%args) = @_;
 	$args{type} ||= $args{parser};
-	$args{type} ||= 'Logfile::Hit::Combined';
+	$args{type} ||= 'Logfile::EPrints::Hit::Combined';
 	bless \%args, $class;
 }
 
@@ -33,14 +33,14 @@ sub parse_fh
 
 =head1 NAME
 
-Logfile::Parser - Parse Web server logs that are formatted as one hit per line (e.g. Apache)
+Logfile::EPrints::Parser - Parse Web server logs that are formatted as one hit per line (e.g. Apache)
 
 =head1 SYNOPSIS
 
-	use Logfile::Parser;
+	use Logfile::EPrints::Parser;
 
-	$p = Logfile::Parser->new(
-	  type=>'Logfile::Hit::Combined',
+	$p = Logfile::EPrints::Parser->new(
+	  type=>'Logfile::EPrints::Hit::Combined',
 	  handler=>$Handler
 	);
 
