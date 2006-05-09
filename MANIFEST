@@ -11,6 +11,7 @@ lib/Logfile/EPrints/Period.pm
 lib/Logfile/EPrints/Repeated.pm
 lib/Logfile/EPrints/RobotsFilter.pm
 lib/Logfile/EPrints/RobotsTxtFilter.pm
+Makefile.PL
 MANIFEST
 MANIFEST.SKIP
 META.yml			Module meta-data (added by MakeMaker)

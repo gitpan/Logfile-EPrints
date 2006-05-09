@@ -1,5 +1,21 @@
 package Logfile::EPrints::RobotsTxtFilter;
 
+=head1 NAME
+
+Logfile::EPrints::RobotsTxtFilter - Filter Web log hits using a database of robot's IPs
+
+=head1 OPTIONS
+
+=over 4
+
+=item file
+
+Specify the robots DBM file to use.
+
+=back
+
+=cut
+
 use DB_File;
 
 use constant BOT_CACHE => '/usr/local/share/Logfile/botcache.db';
@@ -46,7 +62,7 @@ sub robotstxt
 {
 	my ($self,$hit) = @_;
 #	warn "Got new robot: " . join(',',$hit->hostname||$hit->address,$hit->utime,$hit->agent) . "\n";
-	$self->{cache}->{$hit->address} = join ' ', $hit->utime, $hit->agent;
+	$self->{cache}->{$hit->address} = join ' ', $hit->utime, ($hit->agent || '');
 }
 
 1;
