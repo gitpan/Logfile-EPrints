@@ -26,7 +26,7 @@ sub new
 {
 	my ($class,%args) = @_;
 	my $self = bless \%args, ref($class) || $class;
-	tie %{$self->{cache}}, 'DB_File', ($args{'file'}||BOT_CACHE) 
+	tie %{$self->{cache}}, 'DB_File', ($args{'file'}||BOT_CACHE), O_CREAT|O_RDWR, 0666
 		or die "Unable to open robots cache database (".($args{'file'}||BOT_CACHE)."): ".$!;
 	my @KEYS;
 	while( my ($key, $value) = each %{$self->{cache}} ) {

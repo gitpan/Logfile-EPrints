@@ -78,7 +78,9 @@ sub addr2institution {
 	return if exists($INST_CACHE{$uri});
 
 	# Retrieve the home page
+	$UA->max_size( 2048 );
 	my $r = $UA->get($uri);
+	$UA->max_size( undef );
 	if( $r->is_error ) {
 		warn "Error retrieving homepage ($uri): " . $r->message;
 		$INST_CACHE{$uri} = undef;

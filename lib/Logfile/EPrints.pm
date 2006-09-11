@@ -7,6 +7,7 @@ use Logfile::EPrints::Hit;
 use Logfile::EPrints::Institution;
 use Logfile::EPrints::Repeated;
 use Logfile::EPrints::Parser;
+use Logfile::EPrints::Parser::OAI;
 use Logfile::EPrints::RobotsTxtFilter;
 use Logfile::EPrints::Period;
 
@@ -36,7 +37,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '1.07';
+our $VERSION = '1.08';
 
 # Preloaded methods go here.
 

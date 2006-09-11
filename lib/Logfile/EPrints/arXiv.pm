@@ -3,12 +3,6 @@ package Logfile::EPrints::arXiv;
 use strict;
 use warnings;
 
-use Logfile::Hit;
-use Logfile::Institution;
-use Logfile::Repeated;
-use Logfile::Parser;
-use Logfile::RobotsTxtFilter;
-
 use URI;
 use Socket;
 

@@ -7,6 +7,7 @@ lib/Logfile/EPrints/arXiv.pm
 lib/Logfile/EPrints/Hit.pm
 lib/Logfile/EPrints/Institution.pm
 lib/Logfile/EPrints/Parser.pm
+lib/Logfile/EPrints/Parser/OAI.pm
 lib/Logfile/EPrints/Period.pm
 lib/Logfile/EPrints/Repeated.pm
 lib/Logfile/EPrints/RobotsFilter.pm

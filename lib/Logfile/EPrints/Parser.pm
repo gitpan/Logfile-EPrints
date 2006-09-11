@@ -1,6 +1,6 @@
 package Logfile::EPrints::Parser;
 
-use Logfile::Hit;
+use Logfile::EPrints::Hit;
 use POSIX qw/strftime/;
 
 sub new
