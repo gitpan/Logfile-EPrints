@@ -1,3 +1,48 @@
+package Logfile::EPrints::Hit;
+
+=pod
+
+Logfile::EPrints::Hit - Generic 'hit' object
+
+=head1 DESCRIPTION
+
+This object represents a single entry in a log file and doesn't proscribe any particular schema.
+
+This uses the 'AUTOLOAD' mechanism to allow any variable to be defined as a method.
+
+'Hit' objects are passed between filters that may add additional functionality (e.g. by subclassing the hit object).
+
+=head1 SYNOPSIS
+
+	use Logfile::EPrints::Hit;
+
+	my $hit = Logfile::EPrints::Hit->new;
+	$hit->date( '2006-05-01 23:10:05' );
+
+	print $hit->date;
+
+=cut
+
+use strict;
+use warnings;
+
+use vars qw( $AUTOLOAD );
+
+sub new
+{
+	my( $class, %args ) = @_;
+	return bless \%args, ref($class) || $class;
+}
+
+sub AUTOLOAD {
+	$AUTOLOAD =~ s/.*:://;
+	return if $AUTOLOAD =~ /^[A-Z]/;
+	my $self = shift;
+	return ref($self->{$AUTOLOAD}) ?
+		&{$self->{$AUTOLOAD}}($self,@_) : 
+		$self->{$AUTOLOAD};
+}
+
 package Logfile::EPrints::Hit::Combined;
 
 # Log file format is:
@@ -97,6 +142,10 @@ Tim Brody - <tdb01r@ecs.soton.ac.uk>
 
 #use warnings;
 #use strict;
+
+use vars qw( @ISA );
+@ISA = qw( Logfile::EPrints::Hit );
+
 use vars qw( $AUTOLOAD %INST_CACHE $UA $LINE_PARSER @FIELDS $GEO );
 use Date::Parse;
 use POSIX qw/ strftime /;
@@ -147,15 +196,6 @@ sub new {
 	return bless \%self, $_[0];
 }
 
-sub AUTOLOAD {
-	$AUTOLOAD =~ s/.*:://;
-	return if $AUTOLOAD =~ /^[A-Z]/;
-	my $self = shift;
-	return ref($self->{$AUTOLOAD}) ?
-		&{$self->{$AUTOLOAD}}($self,@_) : 
-		$self->{$AUTOLOAD};
-}
-
 sub toString {
 	my $self = shift;
 	my $str = "===Parsed Reference===\n";
@@ -199,8 +239,12 @@ package Logfile::EPrints::Hit::arXiv;
 # ADDRESS IDENTD_USERID USER_ID [DATE TIMEZONE] "request" HTTP_CODE RESPONSE_SIZE "referrer" "agent"
 # But can have unescaped quotes in the request or agent field (might be just uk mirror oddity)
 
+use strict;
+use warnings;
+
 use Socket;
-use base Logfile::EPrints::Hit::Combined;
+use vars qw( @ISA );
+@ISA = qw( Logfile::EPrints::Hit::Combined );
 
 sub new {
 	my ($class,$hit) = @_;
@@ -237,8 +281,12 @@ package Logfile::EPrints::Hit::Bracket;
 #
 # host ident user_id [dd/mmm/yyyy:hh:mm:ss +zone] [User Agent|email?|?|referrer] "page" code size
 
+use strict;
+use warnings;
+
 use Socket;
-use base Logfile::EPrints::Hit::Combined;
+use vars qw( @ISA );
+@ISA = qw( Logfile::EPrints::Hit::Combined );
 
 sub new {
 	my $class = shift;

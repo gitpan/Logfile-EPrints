@@ -1,10 +1,11 @@
 use Test::More tests => 11;
 
 use Logfile::EPrints;
+use Logfile::EPrints::Hit;
 ok(1);
 
 my $logline = 'hal9032.cs.uiuc.edu - - [03/Jul/2005:07:10:09 +0100] "GET /robots.txt" HTTP/1.0" 200 889 "-" ""Mozilla/5.0 (X11; U; Linux i686;en-US; rv:1.2.1) Gecko/20030225""';
-my $hit = Logfile::Hit::arXiv->new($logline);
+my $hit = Logfile::EPrints::Hit::arXiv->new($logline);
 ok($hit);
 ok($hit->hostname eq 'hal9032.cs.uiuc.edu');
 ok($hit->code eq '200');
@@ -12,7 +13,7 @@ ok($hit->datetime eq '20050703071009');
 ok($hit->page eq '/robots.txt');
 
 $logline = 'bigbird-l1.webworksgy.com - - [27/Aug/2005:04:00:32 +0100] [Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.8) Gecko/20050511 Firefox/1.0.4|-|0|http://uk.arxiv.org/abs/nlin.AO/0411066] "GET /pdf/nlin.AO/0411066 HTTP/1.0" 302 238';
-$hit = Logfile::Hit::Bracket->new($logline);
+$hit = Logfile::EPrints::Hit::Bracket->new($logline);
 ok($hit);
 ok($hit->hostname eq 'bigbird-l1.webworksgy.com');
 ok($hit->page eq '/pdf/nlin.AO/0411066');

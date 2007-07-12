@@ -10,8 +10,8 @@ ok($hit->address eq '68.239.101.251');
 ok($hit->code eq '200');
 ok($hit->datetime eq '20050306042935');
 
-use Logfile::Institution;
-use Logfile::Repeated;
+use Logfile::EPrints::Institution;
+use Logfile::EPrints::Repeated;
 ok(1);
 
 open my $fh, 'examples/ecs.log' or die $!;

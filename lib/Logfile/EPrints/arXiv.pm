@@ -44,11 +44,20 @@ warn "Error parsing: $hit" if( !defined($hit->code) or $hit->code =~ /\D/ );
 		if( $path =~ /^\/((PS_cache)|(ftp))/ ) {
 			$path =~ s/\/\w+\/\d{4}\//\//;
 		}
-		if( $path =~ /^\/(abs|pdf|ps|PS_cache|dvi|ftp)\/([A-Za-z\-\.]+)\/?(\d{7})/ ) {
+		if( $path =~ /^\/(abs|pdf|ps|PS_cache|dvi|ftp)\/([A-Za-z\-\.]+)\/?([0-9]{7})/ ) {
 			my ($t,$i,$n) = ($1,$2,$3);
 			$i=~ s/(?<=\w)\.\w+$//;
 			$hit->{identifier} = 'oai:arXiv.org:'.$i.'/'.$n;
 			if( $t eq 'abs' ) {
+				$self->{handler}->abstract($hit);
+			} else {
+				$self->{handler}->fulltext($hit);
+			}
+		# arXiv:0704.0021, introduced Apr 2007
+		} elsif( $path =~ /^\/(abs|pdf|ps|PS_cache|dvi|ftp)\/([0-9]{4}\.[0-9]{4,})/ ) {
+			my( $type, $identifier ) = ($1,$2);
+			$hit->{identifier} = 'oai:arXiv.org:' . $identifier;
+			if( $type eq 'abs' ) {
 				$self->{handler}->abstract($hit);
 			} else {
 				$self->{handler}->fulltext($hit);
@@ -68,16 +77,6 @@ warn "Error parsing: $hit" if( !defined($hit->code) or $hit->code =~ /\D/ );
 			#warn "Unhandled request type: $path";
 		}
 	}
-}
-
-sub page2oai {
-	my $page = shift;
-	if( $page =~ /([A-Za-z\-\.]+\/\d{7})/ ) {
-		my $identifier = $1;
-		$identifier =~ s/(\w+)\.\w+/$1/;
-		return 'oai:arXiv.org:'.$identifier;
-	}
-	return undef;
 }
 
 # Autoload methods go after =cut, and are processed by the autosplit program.
@@ -101,7 +100,7 @@ Logfile::EPrints::arXiv - Parse Apache logs from an arXiv mirror
 	  )),
 	),
   );
-  open my $fh, "<access_log" or die $!;
+  open my $fh, "<", "access_log" or die $!;
   $parser->parse_fh($fh);
   close($fh);
 

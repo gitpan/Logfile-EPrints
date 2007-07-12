@@ -8,13 +8,13 @@ use DB_File;
 
 use vars qw( $AUTOLOAD );
 
-my $path = '/usr/local/awstats/wwwroot/cgi-bin/lib/';
+my $path = '/var/www/awstats/lib';
+if( not -e "$path/robots.pm" or not -e "$path/search_engines.pm" )
+{
+	Carp::croak("Requires awstats 6.5 (can not read search_engines.pm in [$path])");
+}
 do "$path/robots.pm";
 do "$path/search_engines.pm";
-if( $@ )
-{
-	Carp::confess("Requires awstats 6.5 (can not find search_engines.pm in [$path])");
-}
 
 our @RobotsSearchIDOrder = ();
 {

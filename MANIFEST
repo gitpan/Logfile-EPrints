@@ -1,5 +1,10 @@
 bin/robotstxt.pl
 Changes
+docs/dbi.example
+docs/Filter.example
+docs/foo.example
+docs/Hit.example
+docs/Parser.example
 examples/arxiv.pl
 examples/ecs.log
 lib/Logfile/EPrints.pm

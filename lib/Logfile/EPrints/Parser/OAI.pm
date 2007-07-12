@@ -58,6 +58,7 @@ sub harvest
 		my $f = $hit->{ svc };
 		$handler->$f( $hit );
 	}
+	die $r->message unless $r->is_success;
 }
 
 =back
