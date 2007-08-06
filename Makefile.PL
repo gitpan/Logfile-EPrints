@@ -12,6 +12,7 @@ WriteMakefile(
 		Socket => 0.1,
 		URI => 0.1,
 		Text::CSV_XS => 0.1,
+		HTTP::OAI => 3.19,
 	}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/Logfile/EPrints.pm', # retrieve abstract from module
