@@ -1,34 +1,9 @@
-package Logfile::EPrints::arXiv;
+package Logfile::EPrints::Mapping::arXiv;
 
 use strict;
 use warnings;
 
 use URI;
-use Socket;
-
-require Exporter;
-use vars qw( %UID %ROBOTS );
-
-our @ISA = qw(Exporter);
-
-# Items to export into callers namespace by default. Note: do not export
-# names by default without a very good reason. Use EXPORT_OK instead.
-# Do not simply export all your public functions/methods/constants.
-
-# This allows declaration	use EPrints::ParseLog ':all';
-# If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
-# will save memory.
-our %EXPORT_TAGS = ( 'all' => [ qw(
-	
-) ] );
-
-our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-
-our @EXPORT = qw(
-	
-);
-
-# Preloaded methods go here.
 
 sub new {
 	my ($class,%args) = @_;
@@ -44,7 +19,7 @@ warn "Error parsing: $hit" if( !defined($hit->code) or $hit->code =~ /\D/ );
 		if( $path =~ /^\/((PS_cache)|(ftp))/ ) {
 			$path =~ s/\/\w+\/\d{4}\//\//;
 		}
-		if( $path =~ /^\/(abs|pdf|ps|PS_cache|dvi|ftp)\/([A-Za-z\-\.]+)\/?([0-9]{7})/ ) {
+		if( $path =~ /^\/(abs|pdf|ps|PS_cache|dvi|ftp|e-print)\/([A-Za-z\-\.]+)\/?([0-9]{7})/ ) {
 			my ($t,$i,$n) = ($1,$2,$3);
 			$i=~ s/(?<=\w)\.\w+$//;
 			$hit->{identifier} = 'oai:arXiv.org:'.$i.'/'.$n;
@@ -54,7 +29,7 @@ warn "Error parsing: $hit" if( !defined($hit->code) or $hit->code =~ /\D/ );
 				$self->{handler}->fulltext($hit);
 			}
 		# arXiv:0704.0021, introduced Apr 2007
-		} elsif( $path =~ /^\/(abs|pdf|ps|PS_cache|dvi|ftp)\/([0-9]{4}\.[0-9]{4,})/ ) {
+		} elsif( $path =~ /^\/(abs|pdf|ps|PS_cache|dvi|ftp|e-print)\/(?:arxiv\/)?([0-9]{4}\.[0-9]{4,})/ ) {
 			my( $type, $identifier ) = ($1,$2);
 			$hit->{identifier} = 'oai:arXiv.org:' . $identifier;
 			if( $type eq 'abs' ) {
@@ -72,9 +47,11 @@ warn "Error parsing: $hit" if( !defined($hit->code) or $hit->code =~ /\D/ );
 		# ^\/icon|uk\.gif = images
 		# ^\/help = help pages
 		# ^\/form = browsing form
+		# ^\/css = stylesheets
+		# ^\/format = list available full-text formats
 		#} elsif( $path eq '/' || $path =~ /^\/(icon|help|form)|uk\.gif|robots.txt/) {
 		} else {
-			#warn "Unhandled request type: $path";
+#			warn "Unhandled request type: $path\n$hit->{raw}\n";
 		}
 	}
 }
@@ -86,17 +63,17 @@ __END__
 
 =head1 NAME
 
-Logfile::EPrints::arXiv - Parse Apache logs from an arXiv mirror
+Logfile::EPrints::Mapping::arXiv - Parse Apache logs from an arXiv mirror
 
 =head1 SYNOPSIS
 
-  use Logfile::EPrints::arXiv;
+  use Logfile::EPrints;
 
   my $parser = Logfile::EPrints::Parser->new(
-	handler=>Logfile::EPrints::arXiv->new(
+	handler=>Logfile::EPrints::Mapping::arXiv->new(
   	  handler=>Logfile::EPrints::Repeated->new(
 	    handler=>Logfile::EPrints::Institution->new(
-	  	  handler=>$MyHandler,
+	  	  handler=>$my_handler,
 	  )),
 	),
   );
@@ -120,7 +97,7 @@ Logfile::EPrints::arXiv - Parse Apache logs from an arXiv mirror
 
 =head1 DESCRIPTION
 
-See Logfile::EPrints.
+See L<Logfile::EPrints>.
 
 =head1 HANDLER CALLBACKS
 

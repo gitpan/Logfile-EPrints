@@ -1,3 +1,4 @@
+bin/dspace.pl
 bin/robotstxt.pl
 Changes
 docs/dbi.example
@@ -8,9 +9,12 @@ docs/Parser.example
 examples/arxiv.pl
 examples/ecs.log
 lib/Logfile/EPrints.pm
-lib/Logfile/EPrints/arXiv.pm
 lib/Logfile/EPrints/Hit.pm
 lib/Logfile/EPrints/Institution.pm
+lib/Logfile/EPrints/Mapping.pm
+lib/Logfile/EPrints/Mapping/arXiv.pm
+lib/Logfile/EPrints/Mapping/DSpace.pm
+lib/Logfile/EPrints/Mapping/EPrints.pm
 lib/Logfile/EPrints/Parser.pm
 lib/Logfile/EPrints/Parser/OAI.pm
 lib/Logfile/EPrints/Period.pm
@@ -18,11 +22,12 @@ lib/Logfile/EPrints/Repeated.pm
 lib/Logfile/EPrints/RobotsFilter.pm
 lib/Logfile/EPrints/RobotsTxtFilter.pm
 Makefile.PL
-MANIFEST
+MANIFEST			This list of files
 MANIFEST.SKIP
-META.yml			Module meta-data (added by MakeMaker)
+META.yml
 README
 t/00parse.t
 t/01institution.t
 t/02robots.t
 t/03arxiv.t
+t/04address.t

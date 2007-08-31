@@ -6,6 +6,7 @@ WriteMakefile(
     NAME              => 'Logfile::EPrints',
     VERSION_FROM      => 'lib/Logfile/EPrints.pm', # finds $VERSION
     PREREQ_PM         => {
+		Carp => 0.1,
 		Geo::IP::PurePerl => 0.1,
 		Date::Parse => 0.1,
 		LWP::UserAgent => 0.1,

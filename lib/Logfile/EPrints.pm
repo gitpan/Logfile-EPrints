@@ -3,6 +3,13 @@ package Logfile::EPrints;
 use strict;
 use warnings;
 
+use Carp;
+use URI;
+use Socket;
+
+# Deprecated namespace
+use Logfile::EPrints::arXiv;
+
 use Logfile::EPrints::Hit;
 use Logfile::EPrints::Institution;
 use Logfile::EPrints::Repeated;
@@ -11,71 +18,17 @@ use Logfile::EPrints::Parser::OAI;
 use Logfile::EPrints::RobotsTxtFilter;
 use Logfile::EPrints::Period;
 
-use URI;
-use Socket;
+use Logfile::EPrints::Mapping::arXiv;
+use Logfile::EPrints::Mapping::DSpace;
+use Logfile::EPrints::Mapping::EPrints;
 
-require Exporter;
-use AutoLoader qw(AUTOLOAD);
-use vars qw( %UID %ROBOTS );
+# Maintain backwards compatibility
+our @ISA = qw( Logfile::EPrints::Mapping::EPrints );
 
-our @ISA = qw(Exporter);
-
-# Items to export into callers namespace by default. Note: do not export
-# names by default without a very good reason. Use EXPORT_OK instead.
-# Do not simply export all your public functions/methods/constants.
-
-# This allows declaration	use EPrints::ParseLog ':all';
-# If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
-# will save memory.
-our %EXPORT_TAGS = ( 'all' => [ qw(
-	
-) ] );
-
-our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-
-our @EXPORT = qw(
-	
-);
-
-our $VERSION = '1.11';
-
-# Preloaded methods go here.
-
-sub new {
-	my ($class,%args) = @_;
-	bless \%args, $class;
-}
-
-sub hit {
-	my ($self,$hit) = @_;
-	if( 'GET' eq $hit->method && 200 == $hit->code ) {
-		my $path = URI->new($hit->page,'http')->path;
-		# Full text
-		if( $path =~ /^\/(\d+)\/\d/ ) {
-			$hit->{identifier} = $self->_identifier($1);
-			$self->{handler}->fulltext($hit);
-		} elsif( $path =~ /^\/(\d+)\/?$/ ) {
-			$hit->{identifier} = $self->_identifier($1);
-			$self->{handler}->abstract($hit);
-		} elsif( $path =~ /^\/view\/(\w+)\// ) {
-			$hit->{section} = $1;
-			$self->{handler}->browse($hit);
-		} elsif( $path =~ /^\/perl\/search/ ) {
-			$self->{handler}->search($hit);
-		} else {
-			#warn "Unknown path = ", $uri->path, "\n";
-		}
-	}
-}
-
-sub _identifier {
-	my ($self,$no) = @_;
-	return ($self->{'identifier'}||'oai:GenericEprints:').$no;
-}
-
-# Autoload methods go after =cut, and are processed by the autosplit program.
+our $VERSION = '1.12';
 
 1;
+
 __END__
 
 =head1 NAME
@@ -87,7 +40,7 @@ Logfile::EPrints - Parse Apache logs from GNU EPrints
   use Logfile::EPrints;
 
   my $parser = Logfile::EPrints::Parser->new(
-	handler=>Logfile::EPrints->new(
+	handler=>Logfile::EPrints::Mapping::EPrints->new(
 	  identifier=>'oai:myir:', # Prepended to the eprint id
   	  handler=>Logfile::EPrints::Repeated->new(
 	    handler=>Logfile::EPrints::Institution->new(
@@ -97,6 +50,7 @@ Logfile::EPrints - Parse Apache logs from GNU EPrints
   );
   open my $fh, "<access_log" or die $!;
   $parser->parse_fh($fh);
+  close $fh;
 
   package MyHandler;
 
@@ -126,9 +80,9 @@ Other Logfile::EPrints modules may supply additional callbacks.
 
 =item abstract()
 
-=item browse()
-
 =item fulltext()
+
+=item browse()
 
 =item search()
 
@@ -136,7 +90,7 @@ Other Logfile::EPrints modules may supply additional callbacks.
 
 =head1 SEE ALSO
 
-L<Logfile::EPrints::Hit>
+L<Logfile::EPrints::Hit>, L<Logfile::EPrints::Mapping>.
 
 =head1 AUTHOR
 

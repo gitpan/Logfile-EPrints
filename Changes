@@ -1,5 +1,12 @@
 Revision history for Perl extension Logfile::EPrints.
 
+1.12
+	- Fixes to arXiv log support
+	- Get IP address on demand Logfile::EPrints::Hit
+	- Added test case for IP address lookup (based on localhost)
+	- Added a basic mapping for DSpace logs
+	- Moved all mapping modules into Logfile::EPrints::Mapping::*
+
 1.06
 	- Shifted all modules into the Logfile::EPrints
 	  namespace

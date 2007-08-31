@@ -188,9 +188,7 @@ sub new {
 	@self{qw(method page version)} = split / /, $self{'request'};
 	# Look up the IP if the log file contains hostnames
 	if( $self{'address'} !~ /\d$/ ) {
-		$self{'hostname'} = $self{'address'};
-		my( $name, $aliases, $addrtype, $length, @addrs ) = gethostbyname($self{'address'});
-		$self{'address'} = inet_ntoa($addrs[0]) if defined($addrs[0]);
+		$self{'hostname'} = delete $self{'address'};
 	}
 			
 	return bless \%self, $_[0];
@@ -205,28 +203,36 @@ sub toString {
 	$str;
 }
 
-sub country {
-	my $self = shift;
-	# Get the estimated country of origin by IP
-	$self->{country} ||= $GEO->country_code_by_addr($self->address);
+sub _getipbyname
+{
+	my( $name, $aliases, $addrtype, $length, @addrs ) = gethostbyname($_[0]);
+	return defined($addrs[0]) ? inet_ntoa($addrs[0]) : undef;
+}
+
+sub address
+{
+	$_[0]->{address} ||= _getipbyname( $_[0]->{hostname} ) || $_[0]->{hostname};
+}
+
+# Get the estimated country of origin by IP
+sub country
+{
+	$_[0]->{country} ||= $GEO->country_code_by_addr($_[0]->address);
 }
 
 sub hostname
 {
-	my $self = shift;
-	$self->{hostname} ||= gethostbyaddr(inet_aton($self->address), AF_INET);
+	$_[0]->{hostname} ||= gethostbyaddr(inet_aton($_[0]->address), AF_INET);
 }
 
 sub utime
 {
-	my $self = shift;
-	$self->{'utime'} ||= Date::Parse::str2time($self->{date});
+	$_[0]->{'utime'} ||= Date::Parse::str2time($_[0]->{date});
 }
 
 sub datetime
 {
-	my $self = shift;
-	$self->{datetime} ||= _time2datetime($self->utime);
+	$_[0]->{datetime} ||= _time2datetime($_[0]->utime);
 }
 
 sub _time2datetime {
@@ -267,9 +273,7 @@ sub new {
 	
 	# Look up the IP if the log file contains hostnames
 	if( $self{'address'} !~ /\d$/ ) {
-		$self{'hostname'} = $self{'address'};
-		my( $name, $aliases, $addrtype, $length, @addrs ) = gethostbyname($self{'address'});
-		$self{'address'} = inet_ntoa($addrs[0]) if defined($addrs[0]);
+		$self{'hostname'} = delete $self{'address'};
 	}
 
 	bless \%self, $class;
@@ -289,8 +293,7 @@ use vars qw( @ISA );
 @ISA = qw( Logfile::EPrints::Hit::Combined );
 
 sub new {
-	my $class = shift;
-	my $hit = shift;
+	my( $class, $hit ) = @_;
 	my %self = (raw => $hit);
 	my $rest;
 
@@ -304,9 +307,7 @@ sub new {
 	
 	# Look up the IP if the log file contains hostnames
 	if( $self{'address'} !~ /\d$/ ) {
-		$self{'hostname'} = $self{'address'};
-		my( $name, $aliases, $addrtype, $length, @addrs ) = gethostbyname($self{'address'});
-		$self{'address'} = inet_ntoa($addrs[0]) if defined($addrs[0]);
+		$self{'hostname'} = delete $self{'address'};
 	}
 
 	bless \%self, $class;
