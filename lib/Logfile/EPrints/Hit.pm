@@ -152,7 +152,7 @@ use POSIX qw/ strftime /;
 use Text::CSV_XS;
 use Socket;
 use Geo::IP::PurePerl;
-use overload '""' => \&toString;
+#use overload '""' => \&toString;
 $LINE_PARSER = Text::CSV_XS->new({
 	escape_char => '\\',
 	sep_char => ' ',

@@ -8,8 +8,12 @@ docs/Hit.example
 docs/Parser.example
 examples/arxiv.pl
 examples/ecs.log
+examples/performance.pl
 lib/Logfile/EPrints.pm
+lib/Logfile/EPrints/Filter.pm
+lib/Logfile/EPrints/Filter/Session.pm
 lib/Logfile/EPrints/Hit.pm
+lib/Logfile/EPrints/Hit/Negate.pm
 lib/Logfile/EPrints/Institution.pm
 lib/Logfile/EPrints/Mapping.pm
 lib/Logfile/EPrints/Mapping/arXiv.pm
@@ -31,3 +35,4 @@ t/01institution.t
 t/02robots.t
 t/03arxiv.t
 t/04address.t
+t/05session.t

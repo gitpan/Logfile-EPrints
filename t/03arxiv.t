@@ -24,7 +24,7 @@ $logline = '158.202.191.203.dynamic.qld.chariot.net.au - - [14/Aug/2007:14:24:31
 $hit = Logfile::EPrints::Hit::Bracket->new($logline);
 
 $handler = Handler->new;
-Logfile::EPrints::arXiv->new(
+Logfile::EPrints::Mapping::arXiv->new(
 	handler => $handler
 )->hit( $hit );
 

@@ -1,5 +1,13 @@
 Revision history for Perl extension Logfile::EPrints.
 
+1.13
+	- Added Logfile::EPrints::Filter::Debug class
+	- Added alpha 'session' support: see Logfile::EPrints::Filter::Session
+	- Sessions are groups of requests by the same address upto 10 minutes apart
+	- Added MaxPerSession filter to ignore requests in the same session beyond a maximum number
+	- Added Filter base class (Logfile::EPrints::Filter)
+	- Added Logfile::EPrints::Hit::Negate to trigger removal of requests that already went through a filter (alpha)
+	
 1.12
 	- Fixes to arXiv log support
 	- Get IP address on demand Logfile::EPrints::Hit
