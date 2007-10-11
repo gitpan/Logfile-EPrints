@@ -33,7 +33,7 @@ sub new
 {
 	my( $class, %self ) = @_;
 
-	Carp::croak(__PACKAGE__." requires identifier argument") unless $self{identifier};
+	Carp::croak(__PACKAGE__." requires identifier argument") unless exists $self{identifier};
 
 	bless \%self, $class;
 }

@@ -6,7 +6,7 @@ use warnings;
 sub new {
 	my ($class,%self) = @_;
 
-	Carp::croak(__PACKAGE__." requires identifier argument") unless $self{identifier};
+	Carp::croak(__PACKAGE__." requires identifier argument") unless exists $self{identifier};
 
 	bless \%self, $class;
 }
@@ -35,7 +35,7 @@ sub hit {
 
 sub _identifier {
 	my ($self,$no) = @_;
-	return ($self->{'identifier'}||'oai:GenericEprints:').$no;
+	return $self->{'identifier'}.$no;
 }
 
 # Autoload methods go after =cut, and are processed by the autosplit program.

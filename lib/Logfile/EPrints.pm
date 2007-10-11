@@ -7,9 +7,6 @@ use Carp;
 use URI;
 use Socket;
 
-# Deprecated namespace
-use Logfile::EPrints::arXiv;
-
 use Logfile::EPrints::Hit;
 use Logfile::EPrints::Hit::Negate;
 
@@ -29,7 +26,7 @@ use Logfile::EPrints::Mapping::EPrints;
 # Maintain backwards compatibility
 our @ISA = qw( Logfile::EPrints::Mapping::EPrints );
 
-our $VERSION = '1.13';
+our $VERSION = '1.14';
 
 1;
 

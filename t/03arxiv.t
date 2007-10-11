@@ -35,7 +35,7 @@ $logline = 'hamster.dur.ac.uk - - [20/Aug/2007:19:06:56 +0100] [Mozilla/5.0 (X11
 $hit = Logfile::EPrints::Hit::Bracket->new($logline);
 
 $handler = Handler->new;
-Logfile::EPrints::arXiv->new(
+Logfile::EPrints::Mapping::arXiv->new(
 	handler => $handler
 )->hit( $hit );
 

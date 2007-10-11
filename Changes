@@ -1,5 +1,8 @@
 Revision history for Perl extension Logfile::EPrints.
 
+1.14
+    - Completely removed Logfile::EPrints::arXiv to fix test errors
+
 1.13
 	- Added Logfile::EPrints::Filter::Debug class
 	- Added alpha 'session' support: see Logfile::EPrints::Filter::Session
