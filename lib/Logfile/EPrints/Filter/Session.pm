@@ -2,16 +2,16 @@ package Logfile::EPrints::Filter::Session;
 
 use strict;
 
-use vars qw( %SESSIONS $AUTOLOAD $TIDY_ON );
+use vars qw( %SESSIONS $AUTOLOAD $TIDY_ON $TIDY_COUNT );
 
 $TIDY_ON = 10000;
+$TIDY_COUNT = 0;
 
 sub new
 {
 	my ($class,%self) = @_;
 	$self{session} ||= 'Logfile::EPrints::Session';
-	$self{_count} = 0;
-	$self{_last_hit} = undef;
+	$TIDY_COUNT = 0;
 	bless \%self, ref($class) || $class;
 }
 
@@ -21,10 +21,10 @@ sub AUTOLOAD
 	$AUTOLOAD =~ s/^.*:://;
 	my( $self, $hit ) = @_;
 	my $address = $hit->address;
-	if( defined($SESSIONS{$address}) and
+	if( exists $SESSIONS{$address} and
 		$SESSIONS{$address}->expired_by( $hit ) )
 	{
-		delete $SESSIONS{$address};
+		delete($SESSIONS{$address})->end_session;
 	}
 	my $session = $SESSIONS{$address} ||=
 		$self->{session}->new(
@@ -33,7 +33,7 @@ sub AUTOLOAD
 		);
 	$session->$AUTOLOAD( $hit );
 	
-	$self->_tidyup( $hit ) if ++$self->{_count} > $TIDY_ON;
+	$self->_tidyup( $hit ) if ++$TIDY_COUNT > $TIDY_ON;
 	
 	$hit->{session} = $session;
 	return $self->{handler}->$AUTOLOAD($hit);
@@ -42,11 +42,13 @@ sub AUTOLOAD
 sub _tidyup
 {
 	my( $self, $hit ) = @_;
-	$self->{_count} = 0;
-	foreach my $address (keys %SESSIONS)
+	$TIDY_COUNT = 0;
+	for(keys %SESSIONS)
 	{
-		delete $SESSIONS{$address}
-			if $SESSIONS{$address}->expired_by( $hit );
+		if( $SESSIONS{$_}->expired_by( $hit ) )
+		{
+			delete($SESSIONS{$_})->end_session;
+		};
 	}
 }
 
@@ -97,11 +99,11 @@ The session has expired/finished.
 
 =cut
 
-sub end_session {}
+sub end_session { delete $_[0]->{last_abstract} }
 
 =item $session->total( [ $type ] )
 
-Return the total number of requests in this session or, if $type is given, total requests for $type.
+Return the total number of requests in this session or, if $type is given, total unique requests (by identifier) for $type.
 
 =cut
 
@@ -112,11 +114,6 @@ sub total
 	return @_ == 2 ?
 		scalar keys %{$self->{requests}->{$type}} :
 		$self->{requests}->{total};
-}
-
-sub DESTROY
-{
-	$_[0]->end_session;
 }
 
 sub AUTOLOAD
@@ -131,6 +128,22 @@ sub AUTOLOAD
 		$self->start_session( $hit );
 	}
 
+	if( $AUTOLOAD eq 'abstract' )
+	{
+		$self->{last_abstract} = $hit; # creates a loop in this hit
+	}
+	elsif( $AUTOLOAD eq 'fulltext' and exists $self->{last_abstract} )
+	{
+		if( $self->{last_abstract}->identifier eq $hit->identifier )
+		{
+			$hit->{abstract_referrer} = $self->{last_abstract};
+		}
+		else
+		{
+			delete $self->{last_abstract};
+		}
+	}
+	
 	$self->{last_seen} = $hit->utime;
 	
 	$self->{requests}->{total}++;

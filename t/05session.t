@@ -1,4 +1,4 @@
-use Test::More tests => 21;
+use Test::More tests => 24;
 
 use Logfile::EPrints;
 
@@ -85,6 +85,31 @@ $handler->hit( $hit ); # Should trigger tidyup
 
 ok(!exists($Logfile::EPrints::Filter::Session::SESSIONS{$hits[0]->address}),"Session Removed");
 
+$accesslog = <<EOL;
+127.0.0.1 - - [03/May/2006:05:49:17 +0100] "GET /9055/ HTTP/1.0" 200 - "-" "htdig/3.1.6 (_wmaster\@soton.ac.uk)"
+127.0.0.1 - - [03/May/2006:05:49:19 +0100] "GET /9055/02/ECDL__2004__handout_abstract.pdf HTTP/1.0" 200 - "-" "htdig/3.1.6 (_wmaster\@soton.ac.uk)"
+127.0.0.1 - - [03/May/2006:05:49:21 +0100] "GET /9055/02/ECDL__2004__handout_abstract.pdf HTTP/1.0" 200 - "-" "htdig/3.1.6 (_wmaster\@soton.ac.uk)"
+127.0.0.1 - - [03/May/2006:05:49:23 +0100] "GET /9056/02/ECDL__2004__handout_abstract.pdf HTTP/1.0" 200 - "-" "htdig/3.1.6 (_wmaster\@soton.ac.uk)"
+
+EOL
+
+@hits = map {
+	Logfile::EPrints::Hit::Combined->new($_)
+} split /\n/, $accesslog;
+
+$handler->hit( $hits[0] ); # abstract
+$handler->hit( $hits[1] ); # fulltext
+
+is($hits[1]->{abstract_referrer}, $hits[0], "abstract referrer");
+
+$handler->hit( $hits[2] ); # repeated fulltext
+
+is($hits[2]->{abstract_referrer}, $hits[0], "abstract referrer");
+
+$handler->hit( $hits[3] ); # different fulltext
+
+ok(!defined($hits[3]->{abstract_referrer}), "no prior abstract");
+
 package MyHandler;
 
 sub new
@@ -92,6 +117,8 @@ sub new
 	my( $class, %self ) = @_;
 	bless \%self, $class;
 }
+
+sub abstract {}
 
 sub fulltext
 {

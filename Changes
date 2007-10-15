@@ -1,5 +1,11 @@
 Revision history for Perl extension Logfile::EPrints.
 
+1.15
+	- Use Geo::IP::PurePerl or Geo::IP
+	- Added class method to explicitly open the GeoIP database
+	- Don't require HTTP::OAI - to use Parser::OAI you will need to use() it
+	- If a fulltext request is preceeded by an abstract request in the same session and for the same object (based on $hit->identifier) add the abstract request to $hit->{abstract_referrer}
+
 1.14
     - Completely removed Logfile::EPrints::arXiv to fix test errors
 

@@ -21,14 +21,16 @@ sub fulltext
 {
 	my ($self,$hit) = @_;
 	$hit->utime; # Calculate the utime
+	my $r;
 	if( defined($SEEN{$hit->identifier}->{$hit->address}) &&
 		($hit->{utime} - $SEEN{$hit->identifier}->{$hit->address}) <= $SESSION_LEN
 	) {
-		$self->{handler}->repeated($hit);
+		$r = $self->{handler}->repeated($hit);
 	} else {
-		$self->{handler}->fulltext($hit);
+		$r = $self->{handler}->fulltext($hit);
 	}
 	$SEEN{$hit->identifier}->{$hit->address} = $hit->{utime};
+	return $r;
 }
 
 1;

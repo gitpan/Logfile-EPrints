@@ -64,6 +64,18 @@ Logfile::EPrints::Hit::Combined - Parse combined logs like those generated from 
 		$hit->hostname,
 		$hit->page);
 
+=head1 CLASS METHODS
+
+=over 4
+
+=item Logfile::EPrints::Hit::Combined::initialise_geo_ip( [ FILENAME, [ FLAGS ] ] )
+
+Initialise the GeoIP database with Maxmind country database located at FILENAME (must be called before trying to access country()). See L<Geo::IP> or L<Geo::IP::PurePerl>.
+
+=cut
+
+=back
+
 =head1 METHODS
 
 =over 4
@@ -151,19 +163,40 @@ use Date::Parse;
 use POSIX qw/ strftime /;
 use Text::CSV_XS;
 use Socket;
-use Geo::IP::PurePerl;
 #use overload '""' => \&toString;
 $LINE_PARSER = Text::CSV_XS->new({
 	escape_char => '\\',
 	sep_char => ' ',
 });
-$GEO = Geo::IP::PurePerl->new(GEOIP_STANDARD);
 
 # !!! date is handled separately !!!
 @FIELDS = qw(
 	address userid_identd userid 
 	request code size referrer agent
 );
+
+sub initialise_geo_ip
+{
+	my( $filename, $flags ) = @_;
+	foreach my $class (qw( Geo::IP Geo::IP::PurePerl ))
+	{
+		eval "use $class";
+		unless( $@ )
+		{
+			$GEO = $class->new( @_ );
+			last;
+		}
+	}
+	if( $GEO )
+	{
+		no warnings;
+		*country = \&_country;
+	}
+	else
+	{
+		Carp::croak "Error loading GeoIP: make sure you have Geo::IP or Geo::IP::PurePerl installed";
+	}
+}
 
 sub new {
 	return unless $_[1];
@@ -214,8 +247,14 @@ sub address
 	$_[0]->{address} ||= _getipbyname( $_[0]->{hostname} ) || $_[0]->{hostname};
 }
 
-# Get the estimated country of origin by IP
 sub country
+{
+	initialise_geo_ip();
+	return $_[0]->country;
+}
+
+# Get the estimated country of origin by IP
+sub _country
 {
 	$_[0]->{country} ||= $GEO->country_code_by_addr($_[0]->address);
 }

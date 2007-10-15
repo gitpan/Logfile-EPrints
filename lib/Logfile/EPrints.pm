@@ -14,7 +14,7 @@ use Logfile::EPrints::Filter;
 use Logfile::EPrints::Institution;
 use Logfile::EPrints::Repeated;
 use Logfile::EPrints::Parser;
-use Logfile::EPrints::Parser::OAI;
+# use Logfile::EPrints::Parser::OAI;
 use Logfile::EPrints::RobotsTxtFilter;
 use Logfile::EPrints::Period;
 use Logfile::EPrints::Filter::Session;
@@ -26,7 +26,7 @@ use Logfile::EPrints::Mapping::EPrints;
 # Maintain backwards compatibility
 our @ISA = qw( Logfile::EPrints::Mapping::EPrints );
 
-our $VERSION = '1.14';
+our $VERSION = '1.15';
 
 1;
 
