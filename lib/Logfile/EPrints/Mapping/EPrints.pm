@@ -16,10 +16,10 @@ sub hit {
 	if( 'GET' eq $hit->method && 200 == $hit->code ) {
 		my $path = URI->new($hit->page,'http')->path;
 		# Full text
-		if( $path =~ /^\/(\d+)\/\d/ ) {
+		if( $path =~ /^(?:\/archive)?\/(\d+)\/\d/ ) {
 			$hit->{identifier} = $self->_identifier($1);
 			$self->{handler}->fulltext($hit);
-		} elsif( $path =~ /^\/(\d+)\/?$/ ) {
+		} elsif( $path =~ /^(?:\/archive)?\/(\d+)\/?$/ ) {
 			$hit->{identifier} = $self->_identifier($1);
 			$self->{handler}->abstract($hit);
 		} elsif( $path =~ /^\/view\/(\w+)\// ) {
@@ -35,7 +35,7 @@ sub hit {
 
 sub _identifier {
 	my ($self,$no) = @_;
-	return $self->{'identifier'}.$no;
+	return $self->{'identifier'}.($no+0);
 }
 
 # Autoload methods go after =cut, and are processed by the autosplit program.

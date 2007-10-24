@@ -1,5 +1,9 @@
 Revision history for Perl extension Logfile::EPrints.
 
+1.16
+	- Fix warning in Session on non fulltext/abstract hits
+	- Handle old-style eprints URLs of /archive/0000XXXX/YY/
+
 1.15
 	- Use Geo::IP::PurePerl or Geo::IP
 	- Added class method to explicitly open the GeoIP database

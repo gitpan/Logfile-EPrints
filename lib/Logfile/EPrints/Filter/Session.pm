@@ -146,8 +146,11 @@ sub AUTOLOAD
 	
 	$self->{last_seen} = $hit->utime;
 	
-	$self->{requests}->{total}++;
-	$self->{requests}->{$AUTOLOAD}->{$hit->identifier}++;
+	if( $AUTOLOAD eq 'abstract' or $AUTOLOAD eq 'fulltext' )
+	{
+		$self->{requests}->{total}++;
+		$self->{requests}->{$AUTOLOAD}->{$hit->identifier}++;
+	}
 }
 
 package Logfile::EPrints::Filter::MaxPerSession;
