@@ -183,7 +183,7 @@ sub initialise_geo_ip
 		eval "use $class";
 		unless( $@ )
 		{
-			$GEO = $class->new( @_ );
+			$GEO = @_ ? $class->open( @_ ) : $class->new();
 			last;
 		}
 	}

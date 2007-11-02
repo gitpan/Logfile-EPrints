@@ -44,8 +44,12 @@ sub hit
 
 	my $page = $hit->page;
 
+	if( not defined $page )
+	{
+		warn "Hmm, error parsing hit - no page request found in: ".$hit->raw."\n";
+	}
 	# Abstract or community page
-	if( $page =~ /\/handle\/(\d+)\/(\d+)$/ )
+	elsif( $page =~ /\/handle\/(\d+)\/(\d+)$/ )
 	{
 		$hit->{identifier} = $self->_identifier( $1, $2 );
 		$self->{handler}->abstract( $hit );

@@ -7,13 +7,15 @@ use Carp;
 
 use vars qw( $AUTOLOAD %KNOWN_AGENTS );
 
-my $path = '/var/www/awstats/lib';
-if( not -e "$path/robots.pm" or not -e "$path/search_engines.pm" )
+use lib '/var/www/awstats/lib'; # DAG
+use lib '/usr/share/awstats/lib'; # Fedora Core
+
+my $r = do "robots.pm";
+$r = do "search_engines.pm" if $r;
+unless( defined $r )
 {
-	Carp::croak("Requires awstats 6.5 (can not read search_engines.pm in [$path])");
+	Carp::confess "Error loading awstats, you may need to include it's library path before use()ing ".__PACKAGE__.": $!";
 }
-do "$path/robots.pm";
-do "$path/search_engines.pm";
 
 our @RobotsSearchIDOrder = ();
 {
@@ -24,6 +26,10 @@ our @RobotsSearchIDOrder = ();
 	}
 }
 $_ = qr/$_/i for @RobotsSearchIDOrder;
+unless( scalar @RobotsSearchIDOrder )
+{
+	Carp::confess "We appear to have loaded awstats, but didn't get any robots records from robots.pm/search_engines.pm?";
+}
 
 sub new
 {

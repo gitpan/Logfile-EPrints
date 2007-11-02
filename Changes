@@ -1,5 +1,10 @@
 Revision history for Perl extension Logfile::EPrints.
 
+1.17
+	- Fix bug in Geo::IP usage (->open rather than ->new)
+	- Search the @INC path for robots.pm and search_engines.pm
+	- Warn on non-page DSpace log request
+
 1.16
 	- Fix warning in Session on non fulltext/abstract hits
 	- Handle old-style eprints URLs of /archive/0000XXXX/YY/
