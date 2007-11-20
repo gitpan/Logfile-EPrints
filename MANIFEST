@@ -11,6 +11,10 @@ examples/ecs.log
 examples/performance.pl
 lib/Logfile/EPrints.pm
 lib/Logfile/EPrints/Filter.pm
+lib/Logfile/EPrints/Filter/Period.pm
+lib/Logfile/EPrints/Filter/Repeated.pm
+lib/Logfile/EPrints/Filter/Robots.pm
+lib/Logfile/EPrints/Filter/RobotsTxt.pm
 lib/Logfile/EPrints/Filter/Session.pm
 lib/Logfile/EPrints/Hit.pm
 lib/Logfile/EPrints/Hit/Negate.pm

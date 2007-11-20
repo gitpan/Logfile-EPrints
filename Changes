@@ -1,5 +1,10 @@
 Revision history for Perl extension Logfile::EPrints.
 
+1.18
+	- Replaced DB_File with SDBM_File in RobotsTxt filter
+	- Modified Repeated filter to use an SDBM_File for persistent storage
+	- Tightened up test cases for RobotsTxt and Repeated
+
 1.17
 	- Fix bug in Geo::IP usage (->open rather than ->new)
 	- Search the @INC path for robots.pm and search_engines.pm

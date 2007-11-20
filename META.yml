@@ -1,7 +1,7 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Logfile-EPrints
-version:      1.17
+version:      1.18
 version_from: lib/Logfile/EPrints.pm
 installdirs:  site
 requires:
@@ -9,6 +9,7 @@ requires:
     Date::Parse:                   0.1
     Geo::IP::PurePerl:             0.1
     LWP::UserAgent:                0.1
+    SDBM_File:                     0.1
     Socket:                        0.1
     Text::CSV_XS:                  0.1
     URI:                           0.1

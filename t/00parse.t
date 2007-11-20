@@ -11,16 +11,20 @@ ok($hit->code eq '200');
 ok($hit->datetime eq '20050306042935');
 
 use Logfile::EPrints::Institution;
-use Logfile::EPrints::Repeated;
+use Logfile::EPrints::Filter::Repeated;
 ok(1);
 
 open my $fh, 'examples/ecs.log' or die $!;
+
+unlink('examples/repeatscache.db.dir');
+unlink('examples/repeatscache.db.pag');
 
 my $parser = Logfile::EPrints::Parser->new(
 	handler=>Logfile::EPrints->new(
 		identifier=>'oai:eprints.ecs.soton.ac.uk:',
 		handler=>Logfile::EPrints::Institution->new(
-			handler=>Logfile::EPrints::Repeated->new(
+			handler=>my $repeats = Logfile::EPrints::Filter::Repeated->new(
+				file => 'examples/repeatscache.db',
 				handler=>Handler->new(),
 		)),
 	),
@@ -28,7 +32,7 @@ my $parser = Logfile::EPrints::Parser->new(
 $parser->parse_fh($fh);
 close($fh);
 
-ok(1);
+is($repeats->{cache}->{'198.235.195.147xoai:eprints.ecs.soton.ac.uk:773'}, 1110068194, 'Repeats filter');
 
 package Handler;
 
