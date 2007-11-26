@@ -7,13 +7,14 @@ WriteMakefile(
     VERSION_FROM      => 'lib/Logfile/EPrints.pm', # finds $VERSION
     PREREQ_PM         => {
 		Carp => 0.1,
-		Geo::IP::PurePerl => 0.1,
+		Geo::IP::PurePerl => 1.17,
 		Date::Parse => 0.1,
 		LWP::UserAgent => 0.1,
 		Socket => 0.1,
 		URI => 0.1,
 		Text::CSV_XS => 0.1,
 		SDBM_File => 0.1,
+		Encode => 0.1,
 #		HTTP::OAI => 3.19,
 	}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005

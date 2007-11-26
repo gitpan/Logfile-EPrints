@@ -6,17 +6,17 @@ ok(1);
 my $logline = 'hal9032.cs.uiuc.edu - - [03/Jul/2005:07:10:09 +0100] "GET /robots.txt" HTTP/1.0" 200 889 "-" ""Mozilla/5.0 (X11; U; Linux i686;en-US; rv:1.2.1) Gecko/20030225""';
 my $hit = Logfile::EPrints::Hit::arXiv->new($logline);
 ok($hit);
-ok($hit->hostname eq 'hal9032.cs.uiuc.edu');
-ok($hit->code eq '200');
-ok($hit->datetime eq '20050703071009');
-ok($hit->page eq '/robots.txt');
+is($hit->hostname, 'hal9032.cs.uiuc.edu', 'hostname');
+is($hit->code, '200', 'code');
+is($hit->datetime, '20050703061009', 'datetime');
+is($hit->page, '/robots.txt', 'page');
 
 $logline = 'bigbird-l1.webworksgy.com - - [27/Aug/2005:04:00:32 +0100] [Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.8) Gecko/20050511 Firefox/1.0.4|-|0|http://uk.arxiv.org/abs/nlin.AO/0411066] "GET /pdf/nlin.AO/0411066 HTTP/1.0" 302 238';
 $hit = Logfile::EPrints::Hit::Bracket->new($logline);
 ok($hit);
-ok($hit->hostname eq 'bigbird-l1.webworksgy.com');
-ok($hit->page eq '/pdf/nlin.AO/0411066');
-ok($hit->code == 302);
+is($hit->hostname, 'bigbird-l1.webworksgy.com', 'hostname webworksgy');
+is($hit->page, '/pdf/nlin.AO/0411066', 'page pdf');
+is($hit->code, 302, 'code 302');
 
 my $handler;
 

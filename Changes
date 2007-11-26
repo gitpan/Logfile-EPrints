@@ -1,5 +1,13 @@
 Revision history for Perl extension Logfile::EPrints.
 
+1.19
+	- Deprecated Institution.pm and moved its functionality into Hit
+	- Moved all of the methods from ::Combined into ::Hit
+	- Now returns *gmtime* from datetime, to be consistent with utime (should fix failed test cases on non-GMT machines)
+	- Replaced initialise_geo_ip with load_country_db, now requires a filename
+	- Added organisation/load_org_db methods to look up the organisation name from Maxmind
+	- Added requirement for Encode (used by org database)
+
 1.18
 	- Replaced DB_File with SDBM_File in RobotsTxt filter
 	- Modified Repeated filter to use an SDBM_File for persistent storage

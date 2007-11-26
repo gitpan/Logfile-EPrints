@@ -21,56 +21,17 @@ This uses the 'AUTOLOAD' mechanism to allow any variable to be defined as a meth
 
 	print $hit->date;
 
-=cut
-
-use strict;
-use warnings;
-
-use vars qw( $AUTOLOAD );
-
-sub new
-{
-	my( $class, %args ) = @_;
-	return bless \%args, ref($class) || $class;
-}
-
-sub AUTOLOAD {
-	$AUTOLOAD =~ s/.*:://;
-	return if $AUTOLOAD =~ /^[A-Z]/;
-	my $self = shift;
-	return ref($self->{$AUTOLOAD}) ?
-		&{$self->{$AUTOLOAD}}($self,@_) : 
-		$self->{$AUTOLOAD};
-}
-
-package Logfile::EPrints::Hit::Combined;
-
-# Log file format is:
-# ADDRESS IDENTD_USERID USER_ID [DATE TIMEZONE] "request" HTTP_CODE RESPONSE_SIZE "referrer" "agent"
-
-=pod
-
-=head1 NAME
-
-Logfile::EPrints::Hit::Combined - Parse combined logs like those generated from Apache
-
-=head1 SYNOPSIS
-
-	use Logfile::EPrints::Hit;
-
-	my $hit = Logfile::EPrints::Hit::Combined->new($line);
-
-	printf("%s requested %s\n",
-		$hit->hostname,
-		$hit->page);
-
 =head1 CLASS METHODS
 
 =over 4
 
-=item Logfile::EPrints::Hit::Combined::initialise_geo_ip( [ FILENAME, [ FLAGS ] ] )
+=item Logfile::EPrints::Hit::Combined::load_country_db( FILENAME [, FLAGS ] )
 
-Initialise the GeoIP database with Maxmind country database located at FILENAME (must be called before trying to access country()). See L<Geo::IP> or L<Geo::IP::PurePerl>.
+Load the Maxmind country database located at FILENAME.
+
+=item Logfile::EPrints::Hit::Combined::load_org_db( FILENAME [, FLAGS ] )
+
+Load the Maxmind organisation database located at FILENAME.
 
 =cut
 
@@ -134,17 +95,216 @@ HTTP version requested (HTTP/1.1 etc).
 
 =item country()
 
-Country that the IP is probably in (according to GeoIP).
+Country that the IP is probably in, must call load_country_db first.
 
-=item homepage()
+=item organisation()
 
-Home page of the requesting user's service provider, i.e. www.<hostname>. Performs an on-demand HTTP request.
+Organisation that the IP belongs to, must call load_org_db first.
 
 =item institution()
 
-Title of the user's home page. Performs an on-demand HTTP request, with the result cached by the class.
+Returns the title from the homepage()
+
+=item homepage()
+
+Returns the homepage for the user's network.
 
 =back
+
+=cut
+
+use strict;
+
+use POSIX qw/ strftime /;
+use Date::Parse;
+use Socket;
+
+use vars qw( $AUTOLOAD %INST_CACHE );
+
+use vars qw( $GEO_IP_CLASS $ORG_DB $COUNTRY_DB );
+for(qw( Geo::IP Geo::IP::PurePerl ))
+{
+	eval "use $_";
+	unless($@)
+	{
+		$GEO_IP_CLASS = $_;
+		last;
+	}
+}
+
+use vars qw( $UA );
+require LWP::UserAgent;
+$UA = LWP::UserAgent->new();
+$UA->timeout(5);
+
+sub new
+{
+	my( $class, %args ) = @_;
+	return bless \%args, ref($class) || $class;
+}
+
+sub AUTOLOAD {
+	$AUTOLOAD =~ s/.*:://;
+	return if $AUTOLOAD =~ /^[A-Z]/;
+	my $self = shift;
+	return ref($self->{$AUTOLOAD}) ?
+		&{$self->{$AUTOLOAD}}($self,@_) : 
+		$self->{$AUTOLOAD};
+}
+
+sub toString {
+	my $self = shift;
+	my $str = "===Parsed Reference===\n";
+	while(my ($k,$v) = each %$self) {
+		$str .= "$k=".($v||'n/a')."\n";
+	}
+	$str;
+}
+
+sub load_country_db
+{
+	my( $filename, $flags ) = @_;
+
+	Carp::croak "Requires Geo::IP or Geo::IP::PurePerl" unless $GEO_IP_CLASS;
+	Carp::croak "Missing filename argument" unless @_;
+
+	$COUNTRY_DB = $GEO_IP_CLASS->open( @_ );
+
+	no warnings;
+	*country = \&_country;
+}
+
+sub load_org_db
+{
+	my( $filename, $flags ) = @_;
+
+	Carp::croak "Requires Geo::IP or Geo::IP::PurePerl" unless $GEO_IP_CLASS;
+	Carp::croak "Missing filename argument" unless @_;
+
+	$ORG_DB = $GEO_IP_CLASS->open( @_ );
+
+	no warnings;
+	*organisation = \&_organisation;
+}
+
+sub _getipbyname
+{
+	my( $name, $aliases, $addrtype, $length, @addrs ) = gethostbyname($_[0]);
+	return defined($addrs[0]) ? inet_ntoa($addrs[0]) : undef;
+}
+
+sub address
+{
+	$_[0]->{address} ||= _getipbyname( $_[0]->{hostname} ) || $_[0]->{hostname};
+}
+
+sub country
+{
+	Carp::croak "You must call ".__PACKAGE__."::load_country_db first";
+}
+
+sub _country
+{
+	$_[0]->{country} ||= $COUNTRY_DB->country_code_by_addr($_[0]->address);
+}
+
+sub organisation
+{
+	Carp::croak "You must call ".__PACKAGE__."::load_org_db first";
+}
+
+sub _organisation
+{
+	$_[0]->{organisation} ||= Encode::decode('iso-8859-1', $ORG_DB->org_by_name($_[0]->address));
+}
+
+sub hostname
+{
+	$_[0]->{hostname} ||= gethostbyaddr(inet_aton($_[0]->address), AF_INET);
+}
+
+sub utime
+{
+	$_[0]->{'utime'} ||= Date::Parse::str2time($_[0]->{date});
+}
+
+sub datetime
+{
+	$_[0]->{datetime} ||= _time2datetime($_[0]->utime);
+}
+
+sub _time2datetime {
+	strftime("%Y%m%d%H%M%S",gmtime($_[0]));
+}
+
+sub institution
+{
+	my( $self ) = @_;
+	return $self->{_institution} if exists($self->{_institution});
+	@$self{qw(_institution _homepage)} = addr2institution($self->hostname);
+	$self->{_institution};
+}
+
+sub homepage
+{
+	my( $self ) = @_;
+	return $self->{_homepage} if exists($self->{_homepage});
+	@$self{qw(_institution _homepage)} = addr2institution($self->hostname);
+	$self->{_homepage};
+}
+
+sub addr2institution
+{
+	my( $addr ) = @_;
+
+	# Get the domain name
+	return unless $addr =~ /([^\.]+)\.([^\.]+)\.([^\.]+)$/;
+	my $uri = 'http://www.' . ((length($3) > 2 || length($2) > 3) ?
+		join('.', $2, $3) :
+		join('.', $1, $2, $3));
+	$uri .= '/';
+	return ($INST_CACHE{$uri},$uri) if $INST_CACHE{$uri};
+	return if exists($INST_CACHE{$uri});
+
+	# Retrieve the home page
+	$UA->max_size( 2048 );
+	my $r = $UA->get($uri);
+	$UA->max_size( undef );
+	if( $r->is_error )
+	{
+		warn "Error retrieving homepage ($uri): " . $r->message;
+		$INST_CACHE{$uri} = undef;
+		return;
+	}
+
+	return unless $r->content =~ /<\s*title[^>]*>([^<]+)<\s*\/\s*title\s*>/is;
+	my $title = $1;
+	$title =~ s/\r\n/ /sg;
+	$title =~ s/^\s+//;
+	$title =~ s/(?:\-)?\s+$//;
+	return ($INST_CACHE{$uri} = $title,$uri);
+}
+
+package Logfile::EPrints::Hit::Combined;
+
+# Log file format is:
+# ADDRESS IDENTD_USERID USER_ID [DATE TIMEZONE] "request" HTTP_CODE RESPONSE_SIZE "referrer" "agent"
+
+=pod
+
+=head1 NAME
+
+Logfile::EPrints::Hit::Combined - Parse combined format logs like those generated from Apache
+
+=head1 SYNOPSIS
+
+	use Logfile::EPrints::Hit;
+
+	my $hit = Logfile::EPrints::Hit::Combined->new($line);
+
+	printf("%s requested %s\n",
+		$hit->hostname,
+		$hit->page);
 
 =head1 AUTHOR
 
@@ -152,54 +312,28 @@ Tim Brody - <tdb01r@ecs.soton.ac.uk>
 
 =cut
 
-#use warnings;
-#use strict;
+use strict;
 
 use vars qw( @ISA );
 @ISA = qw( Logfile::EPrints::Hit );
 
-use vars qw( $AUTOLOAD %INST_CACHE $UA $LINE_PARSER @FIELDS $GEO );
-use Date::Parse;
-use POSIX qw/ strftime /;
+use vars qw( $AUTOLOAD $LINE_PARSER @FIELDS );
+
 use Text::CSV_XS;
-use Socket;
-#use overload '""' => \&toString;
 $LINE_PARSER = Text::CSV_XS->new({
 	escape_char => '\\',
 	sep_char => ' ',
 });
 
+# Fields in a single log line (as split by Text::CSV)
 # !!! date is handled separately !!!
 @FIELDS = qw(
 	address userid_identd userid 
 	request code size referrer agent
 );
 
-sub initialise_geo_ip
+sub new($$)
 {
-	my( $filename, $flags ) = @_;
-	foreach my $class (qw( Geo::IP Geo::IP::PurePerl ))
-	{
-		eval "use $class";
-		unless( $@ )
-		{
-			$GEO = @_ ? $class->open( @_ ) : $class->new();
-			last;
-		}
-	}
-	if( $GEO )
-	{
-		no warnings;
-		*country = \&_country;
-	}
-	else
-	{
-		Carp::croak "Error loading GeoIP: make sure you have Geo::IP or Geo::IP::PurePerl installed";
-	}
-}
-
-sub new {
-	return unless $_[1];
 	my %self = ('raw'=>$_[1]);
 
 	# The date is contained in square-brackets
@@ -227,57 +361,6 @@ sub new {
 	return bless \%self, $_[0];
 }
 
-sub toString {
-	my $self = shift;
-	my $str = "===Parsed Reference===\n";
-	while(my ($k,$v) = each %$self) {
-		$str .= "$k=".($v||'n/a')."\n";
-	}
-	$str;
-}
-
-sub _getipbyname
-{
-	my( $name, $aliases, $addrtype, $length, @addrs ) = gethostbyname($_[0]);
-	return defined($addrs[0]) ? inet_ntoa($addrs[0]) : undef;
-}
-
-sub address
-{
-	$_[0]->{address} ||= _getipbyname( $_[0]->{hostname} ) || $_[0]->{hostname};
-}
-
-sub country
-{
-	initialise_geo_ip();
-	return $_[0]->country;
-}
-
-# Get the estimated country of origin by IP
-sub _country
-{
-	$_[0]->{country} ||= $GEO->country_code_by_addr($_[0]->address);
-}
-
-sub hostname
-{
-	$_[0]->{hostname} ||= gethostbyaddr(inet_aton($_[0]->address), AF_INET);
-}
-
-sub utime
-{
-	$_[0]->{'utime'} ||= Date::Parse::str2time($_[0]->{date});
-}
-
-sub datetime
-{
-	$_[0]->{datetime} ||= _time2datetime($_[0]->utime);
-}
-
-sub _time2datetime {
-	strftime("%Y%m%d%H%M%S",localtime($_[0]));
-}
-
 package Logfile::EPrints::Hit::arXiv;
 
 # Log file format is:
@@ -285,9 +368,7 @@ package Logfile::EPrints::Hit::arXiv;
 # But can have unescaped quotes in the request or agent field (might be just uk mirror oddity)
 
 use strict;
-use warnings;
 
-use Socket;
 use vars qw( @ISA );
 @ISA = qw( Logfile::EPrints::Hit::Combined );
 
@@ -325,9 +406,7 @@ package Logfile::EPrints::Hit::Bracket;
 # host ident user_id [dd/mmm/yyyy:hh:mm:ss +zone] [User Agent|email?|?|referrer] "page" code size
 
 use strict;
-use warnings;
 
-use Socket;
 use vars qw( @ISA );
 @ISA = qw( Logfile::EPrints::Hit::Combined );
 
