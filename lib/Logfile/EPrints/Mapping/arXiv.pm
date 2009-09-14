@@ -12,7 +12,11 @@ sub new {
 
 sub hit {
 	my ($self,$hit) = @_;
-warn "Error parsing: $hit" if( !defined($hit->code) or $hit->code =~ /\D/ );
+	if( !defined($hit->code) or $hit->code =~ /\D/ )
+	{
+		Carp::carp("No or invalid response code for: ".$hit->{raw});
+		return;
+	}
 	if( 'GET' eq $hit->method && 200 == $hit->code ) {
 		my $path = URI->new($hit->page,'http')->path;
 		$path =~ s/\/other//;

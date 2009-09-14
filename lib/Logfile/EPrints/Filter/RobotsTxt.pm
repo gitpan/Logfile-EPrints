@@ -52,7 +52,7 @@ sub AUTOLOAD
 	$AUTOLOAD =~ s/^.*:://;
 	return if $AUTOLOAD =~ /[A-Z]$/;
 	my ($self,$hit) = @_;
-	if( $hit->page =~ /robots\.txt$/ )
+	if( defined($hit->page) && $hit->page =~ /robots\.txt$/ )
 	{
 		$self->robotstxt($hit);
 		return undef;

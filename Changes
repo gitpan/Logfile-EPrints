@@ -1,5 +1,10 @@
 Revision history for Perl extension Logfile::EPrints.
 
+1.20
+	- Simplified bracketed logs parsing (single regexp)
+	- Will now croak if a date is unparseable
+	- Fixed some undef warnings so they carp
+
 1.19
 	- Deprecated Institution.pm and moved its functionality into Hit
 	- Moved all of the methods from ::Combined into ::Hit

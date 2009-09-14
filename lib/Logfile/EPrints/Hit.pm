@@ -152,7 +152,9 @@ sub AUTOLOAD {
 		$self->{$AUTOLOAD};
 }
 
-sub toString {
+# should be to_string in Perl
+*toString = \&to_string;
+sub to_string {
 	my $self = shift;
 	my $str = "===Parsed Reference===\n";
 	while(my ($k,$v) = each %$self) {
@@ -225,7 +227,8 @@ sub hostname
 
 sub utime
 {
-	$_[0]->{'utime'} ||= Date::Parse::str2time($_[0]->{date});
+	$_[0]->{'utime'} ||= Date::Parse::str2time($_[0]->{date})
+		or Carp::croak "Unrecognised or invalid date: $_[0]->{date}";
 }
 
 sub datetime
@@ -257,14 +260,17 @@ sub addr2institution
 {
 	my( $addr ) = @_;
 
+	# Can't do anything unless the address is defined
+	return () unless defined $addr;
+
 	# Get the domain name
-	return unless $addr =~ /([^\.]+)\.([^\.]+)\.([^\.]+)$/;
+	return () unless $addr =~ /([^\.]+)\.([^\.]+)\.([^\.]+)$/;
 	my $uri = 'http://www.' . ((length($3) > 2 || length($2) > 3) ?
 		join('.', $2, $3) :
 		join('.', $1, $2, $3));
 	$uri .= '/';
-	return ($INST_CACHE{$uri},$uri) if $INST_CACHE{$uri};
-	return if exists($INST_CACHE{$uri});
+	return ($INST_CACHE{$uri},$uri) if defined $INST_CACHE{$uri};
+	return () if exists($INST_CACHE{$uri});
 
 	# Retrieve the home page
 	$UA->max_size( 2048 );
@@ -274,10 +280,10 @@ sub addr2institution
 	{
 		warn "Error retrieving homepage ($uri): " . $r->message;
 		$INST_CACHE{$uri} = undef;
-		return;
+		return ();
 	}
 
-	return unless $r->content =~ /<\s*title[^>]*>([^<]+)<\s*\/\s*title\s*>/is;
+	return () unless $r->content =~ /<\s*title[^>]*>([^<]+)<\s*\/\s*title\s*>/is;
 	my $title = $1;
 	$title =~ s/\r\n/ /sg;
 	$title =~ s/^\s+//;
@@ -407,28 +413,35 @@ package Logfile::EPrints::Hit::Bracket;
 
 use strict;
 
-use vars qw( @ISA );
-@ISA = qw( Logfile::EPrints::Hit::Combined );
+our @ISA = qw( Logfile::EPrints::Hit::Combined );
 
 sub new {
 	my( $class, $hit ) = @_;
 	my %self = (raw => $hit);
-	my $rest;
 
-	(@self{qw(address userid_identd userid)},$rest) = split / /, $hit, 4;
-	$self{date} = substr($rest,1,26);
-	$rest = substr($rest,30);
-	$rest =~ s/ "([A-Z]+) ([^ ]+) (HTTP\/1\.[01])" (\d+) (\d+|-)$//;
-	@self{qw(method page version code size)} = ($1,$2,$3,$4,$5);
-	chop($rest);
-	@self{qw(agent from process_time referrer)} = split /\|/, $rest;
-	
-	# Look up the IP if the log file contains hostnames
-	if( $self{'address'} !~ /\d$/ ) {
-		$self{'hostname'} = delete $self{'address'};
+	@self{qw(
+		hostname
+		userid_identd
+		userid
+		date
+		agent
+		from
+		process_time
+		referrer
+		method
+		page
+		version
+		code
+		size
+	)} = $hit =~ /([^ ]+) ([^ ]+) ([^ ]+) \[(.{26})\] \[(.+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\] "([A-Z]+) ([^ ]+) (HTTP\/1\.[01])" (\d+) (\d+|-)/
+		or return undef;
+
+	# Is an IP address rather than hostname
+	if( $self{'hostname'} =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/ ) {
+		$self{'address'} = delete $self{'hostname'};
 	}
 
-	bless \%self, $class;
+	return bless \%self, $class;
 }
 
 1;

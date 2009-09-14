@@ -3,6 +3,8 @@ package Logfile::EPrints::Parser;
 use Logfile::EPrints::Hit;
 use POSIX qw/strftime/;
 
+use strict;
+
 sub new
 {
 	my ($class,%args) = @_;
@@ -16,14 +18,17 @@ sub parse_fh
 	my ($self,$fh) = @_;
 	return unless my $handler = $self->{handler};
 
+	my $hit;
+	my $hit_class = $self->{type};
 	while(<$fh>)
 	{
-		my $hit;
-		unless( $hit = $self->{type}->new($_) ) {
-			warn "Couldn't parse: $_";
-			next;
+		chomp($_);
+		if( defined($hit = $hit_class->new($_)) ) {
+			$handler->hit($hit);
 		}
-		$handler->hit($hit);
+		else {
+			Carp::carp("Error parsing: $_");
+		}
 	}
 }
 
